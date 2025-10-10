@@ -1,0 +1,47 @@
+# Node / paquetes
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Builds / bundlers
+dist/
+.vite/
+
+# Caches / artefactos
+.eslintcache
+.cache/
+*.tsbuildinfo
+
+# Entornos y secretos
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Supabase (CLI / local)
+supabase/.temp/
+supabase/.branches/
+supabase/.cache/
+supabase/functions/**/dist/
+supabase/functions/**/node_modules/
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Tests / coverage
+coverage/
+
+# Hosting
+.vercel/
+.netlify/
+
+# Otros del proyecto
+.bolt/
