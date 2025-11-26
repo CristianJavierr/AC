@@ -38,10 +38,8 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-900 rounded-xl mb-4">
-            <LogIn className="text-white" size={32} />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Adai Soluciones</h1>
+          <div className="mb-4"></div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Adai Soluciones</h1>
           <p className="text-slate-600">Sistema de Gestión Empresarial</p>
         </div>
 

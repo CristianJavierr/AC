@@ -10,6 +10,8 @@ export default function Appointments() {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showDayModal, setShowDayModal] = useState(false);
   const [formData, setFormData] = useState({
     customer_id: '',
     title: '',
@@ -121,6 +123,13 @@ export default function Appointments() {
         aptDate.getFullYear() === date.getFullYear()
       );
     });
+  };
+
+  const handleDayClick = (date: Date | null) => {
+    if (date) {
+      setSelectedDate(date);
+      setShowDayModal(true);
+    }
   };
 
   const changeMonth = (delta: number) => {
@@ -261,8 +270,9 @@ export default function Appointments() {
               return (
                 <div
                   key={index}
-                  className={`min-h-24 p-2 border border-slate-200 rounded-lg ${
-                    day ? 'bg-white hover:bg-slate-50' : 'bg-slate-50'
+                  onClick={() => handleDayClick(day)}
+                  className={`min-h-24 p-2 border border-slate-200 rounded-lg cursor-pointer transition ${
+                    day ? 'bg-white hover:bg-slate-50 hover:shadow-md' : 'bg-slate-50 cursor-default'
                   } ${isToday ? 'ring-2 ring-slate-900' : ''}`}
                 >
                   {day && (
@@ -471,6 +481,136 @@ export default function Appointments() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDayModal && selectedDate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    {selectedDate.toLocaleDateString('es-MX', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {getAppointmentsForDay(selectedDate).length === 0
+                      ? 'No hay citas programadas'
+                      : `${getAppointmentsForDay(selectedDate).length} cita(s) programada(s)`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDayModal(false)}
+                  className="text-slate-400 hover:text-slate-600 transition"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              {getAppointmentsForDay(selectedDate).length === 0 ? (
+                <div className="text-center py-12">
+                  <CalendarIcon className="mx-auto h-12 w-12 text-slate-300" />
+                  <p className="mt-4 text-slate-500">No hay citas para este día</p>
+                  <button
+                    onClick={() => {
+                      setShowDayModal(false);
+                      const dateStr = selectedDate.toISOString().split('T')[0];
+                      setFormData({
+                        ...formData,
+                        start_time: `${dateStr}T09:00`,
+                        end_time: `${dateStr}T10:00`,
+                      });
+                      setShowModal(true);
+                    }}
+                    className="mt-4 text-slate-900 hover:text-slate-700 font-medium"
+                  >
+                    + Agregar cita
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {getAppointmentsForDay(selectedDate)
+                    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+                    .map((apt) => (
+                      <div
+                        key={apt.id}
+                        className="bg-slate-50 border border-slate-200 rounded-lg p-4 hover:shadow-md transition"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-slate-900 text-lg">{apt.title}</h4>
+                            {apt.description && (
+                              <p className="text-sm text-slate-600 mt-1">{apt.description}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 ml-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(apt.status)}`}>
+                              {getStatusLabel(apt.status)}
+                            </span>
+                            <button
+                              onClick={() => {
+                                setShowDayModal(false);
+                                handleEdit(apt);
+                              }}
+                              className="text-slate-400 hover:text-blue-600 transition p-1"
+                              title="Editar"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(apt)}
+                              className="text-slate-400 hover:text-red-600 transition p-1"
+                              title="Eliminar"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <User size={16} className="text-slate-400" />
+                            <span>{apt.customer?.name || 'Sin cliente'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <Clock size={16} className="text-slate-400" />
+                            <span>
+                              {new Date(apt.start_time).toLocaleTimeString('es-MX', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}{' '}
+                              -{' '}
+                              {new Date(apt.end_time).toLocaleTimeString('es-MX', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-slate-200">
+              <button
+                onClick={() => setShowDayModal(false)}
+                className="w-full px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
