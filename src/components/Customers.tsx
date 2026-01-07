@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { supabase, Customer } from '../lib/supabase';
-import { Plus, Edit2, Mail, Phone, Building, MapPin, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Mail, Phone, MapPin, Trash2, FileText, Users, BarChart3, ChevronDown } from 'lucide-react';
 
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [showStats, setShowStats] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    company: '',
     address: '',
+    notes: '',
   });
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function Customers() {
 
     setShowModal(false);
     setEditingCustomer(null);
-    setFormData({ name: '', email: '', phone: '', company: '', address: '' });
+    setFormData({ name: '', email: '', phone: '', address: '', notes: '' });
     loadCustomers();
   };
 
@@ -50,43 +51,28 @@ export default function Customers() {
       name: customer.name,
       email: customer.email || '',
       phone: customer.phone || '',
-      company: customer.company || '',
       address: customer.address || '',
+      notes: customer.notes || '',
     });
     setShowModal(true);
   };
 
   const openNewModal = () => {
     setEditingCustomer(null);
-    setFormData({ name: '', email: '', phone: '', company: '', address: '' });
+    setFormData({ name: '', email: '', phone: '', address: '', notes: '' });
     setShowModal(true);
   };
 
   const handleDelete = async (customer: Customer) => {
-    // Check for related sales
-    const { data: sales } = await supabase
-      .from('sales')
+    const { data: services } = await supabase
+      .from('services')
       .select('id')
       .eq('customer_id', customer.id);
 
-    // Check for related appointments
-    const { data: appointments } = await supabase
-      .from('appointments')
-      .select('id')
-      .eq('customer_id', customer.id);
-
-    let confirmMessage = `¿Estás seguro de eliminar al cliente "${customer.name}"?`;
+    let confirmMessage = '¿Estás seguro de eliminar al cliente "' + customer.name + '"?';
     
-    const warnings = [];
-    if (sales && sales.length > 0) {
-      warnings.push(`${sales.length} venta(s)`);
-    }
-    if (appointments && appointments.length > 0) {
-      warnings.push(`${appointments.length} cita(s)`);
-    }
-
-    if (warnings.length > 0) {
-      confirmMessage += `\n\n⚠️ ADVERTENCIA: Este cliente tiene ${warnings.join(' y ')} asociada(s).\n\nAl eliminarlo:\n- Las ventas mantendrán sus datos pero sin referencia al cliente\n- Las citas serán eliminadas en cascada`;
+    if (services && services.length > 0) {
+      confirmMessage += '\n\n⚠️ ADVERTENCIA: Este cliente tiene ' + services.length + ' servicio(s) asociado(s) que serán eliminados en cascada.';
     }
 
     if (window.confirm(confirmMessage)) {
@@ -103,79 +89,152 @@ export default function Customers() {
     }
   };
 
+  const customersWithEmail = customers.filter(c => c.email).length;
+  const customersWithPhone = customers.filter(c => c.phone).length;
+  const customersWithAddress = customers.filter(c => c.address).length;
+
   if (loading) {
     return <div className="text-center py-8 text-slate-600">Cargando clientes...</div>;
   }
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Gestión de Clientes</h2>
-          <p className="text-slate-600 mt-1">Administra tu cartera de clientes</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Gestión de Clientes</h2>
+          <p className="text-slate-600 text-sm sm:text-base mt-1 hidden sm:block">Administra tu cartera de clientes</p>
         </div>
         <button
           onClick={openNewModal}
-          className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition"
+          className="flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition w-full sm:w-auto"
         >
           <Plus size={20} />
           <span>Agregar Cliente</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="md:hidden mb-4">
+        <button
+          onClick={() => setShowStats(!showStats)}
+          className="w-full flex items-center justify-between bg-slate-100 rounded-lg px-4 py-3"
+        >
+          <div className="flex items-center gap-2">
+            <BarChart3 size={18} className="text-slate-600" />
+            <span className="font-medium text-slate-700">Estadísticas</span>
+          </div>
+          <ChevronDown size={20} className={'text-slate-500 transition-transform duration-200 ' + (showStats ? 'rotate-180' : '')} />
+        </button>
+
+        {showStats && (
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-blue-700 text-xs font-medium">Total Clientes</p>
+              <p className="text-xl font-bold text-blue-800">{customers.length}</p>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <p className="text-green-700 text-xs font-medium">Con Email</p>
+              <p className="text-xl font-bold text-green-800">{customersWithEmail}</p>
+            </div>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+              <p className="text-purple-700 text-xs font-medium">Con Teléfono</p>
+              <p className="text-xl font-bold text-purple-800">{customersWithPhone}</p>
+            </div>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+              <p className="text-orange-700 text-xs font-medium">Con Dirección</p>
+              <p className="text-xl font-bold text-orange-800">{customersWithAddress}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="hidden md:grid grid-cols-4 gap-4 mb-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Users size={18} className="text-blue-600" />
+            <p className="text-blue-700 text-sm font-medium">Total Clientes</p>
+          </div>
+          <p className="text-2xl font-bold text-blue-800">{customers.length}</p>
+        </div>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Mail size={18} className="text-green-600" />
+            <p className="text-green-700 text-sm font-medium">Con Email</p>
+          </div>
+          <p className="text-2xl font-bold text-green-800">{customersWithEmail}</p>
+        </div>
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Phone size={18} className="text-purple-600" />
+            <p className="text-purple-700 text-sm font-medium">Con Teléfono</p>
+          </div>
+          <p className="text-2xl font-bold text-purple-800">{customersWithPhone}</p>
+        </div>
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <MapPin size={18} className="text-orange-600" />
+            <p className="text-orange-700 text-sm font-medium">Con Dirección</p>
+          </div>
+          <p className="text-2xl font-bold text-orange-800">{customersWithAddress}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {customers.map((customer) => (
           <div
             key={customer.id}
-            className="bg-white border border-slate-200 rounded-lg p-5 hover:shadow-md transition"
+            className="bg-white border border-slate-200 rounded-lg p-3 sm:p-5 hover:shadow-md transition"
           >
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="font-semibold text-lg text-slate-900">{customer.name}</h3>
-              <div className="flex gap-1">
+            <div className="flex justify-between items-start mb-2 sm:mb-3">
+              <h3 className="font-semibold text-base sm:text-lg text-slate-900 truncate pr-2">{customer.name}</h3>
+              <div className="flex gap-0.5 sm:gap-1 flex-shrink-0">
                 <button
                   onClick={() => openEditModal(customer)}
                   className="text-slate-400 hover:text-blue-600 transition p-1"
                   title="Editar"
                 >
-                  <Edit2 size={18} />
+                  <Edit2 size={16} />
                 </button>
                 <button
                   onClick={() => handleDelete(customer)}
                   className="text-slate-400 hover:text-red-600 transition p-1"
                   title="Eliminar"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               {customer.email && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Mail size={16} className="text-slate-400" />
-                  <span>{customer.email}</span>
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600">
+                  <Mail size={14} className="text-slate-400 flex-shrink-0" />
+                  <span className="truncate">{customer.email}</span>
                 </div>
               )}
 
               {customer.phone && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Phone size={16} className="text-slate-400" />
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600">
+                  <Phone size={14} className="text-slate-400 flex-shrink-0" />
                   <span>{customer.phone}</span>
                 </div>
               )}
 
-              {customer.company && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Building size={16} className="text-slate-400" />
-                  <span>{customer.company}</span>
+              {customer.address && (
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600">
+                  <MapPin size={14} className="text-slate-400 flex-shrink-0" />
+                  <span className="line-clamp-1 sm:line-clamp-2">{customer.address}</span>
                 </div>
               )}
 
-              {customer.address && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <MapPin size={16} className="text-slate-400" />
-                  <span className="line-clamp-2">{customer.address}</span>
+              {customer.notes && (
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600">
+                  <FileText size={14} className="text-slate-400 flex-shrink-0" />
+                  <span className="line-clamp-1 sm:line-clamp-2">{customer.notes}</span>
                 </div>
+              )}
+
+              {!customer.email && !customer.phone && !customer.address && !customer.notes && (
+                <p className="text-xs text-slate-400 italic">Sin información de contacto</p>
               )}
             </div>
           </div>
@@ -184,18 +243,19 @@ export default function Customers() {
 
       {customers.length === 0 && (
         <div className="text-center py-12">
+          <Users size={48} className="mx-auto text-slate-300 mb-4" />
           <p className="text-slate-500">No hay clientes registrados aún</p>
         </div>
       )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-slate-900 mb-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">
               {editingCustomer ? 'Editar Cliente' : 'Nuevo Cliente'}
             </h3>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Nombre <span className="text-red-500">*</span>
@@ -230,22 +290,23 @@ export default function Customers() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Empresa</label>
-                <input
-                  type="text"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
-                />
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Dirección</label>
                 <textarea
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   rows={2}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Notas</label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  rows={2}
+                  placeholder="Notas adicionales sobre el cliente..."
                 />
               </div>
 

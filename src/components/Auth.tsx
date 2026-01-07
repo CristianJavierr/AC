@@ -17,7 +17,13 @@ export default function Auth() {
     try {
       if (isSignUp) {
         console.log('Intentando registrar con:', { email, password: '***' });
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: window.location.origin + '/verify-email'
+          }
+        });
         console.log('Respuesta de signUp:', { data, error });
         if (error) throw error;
       } else {
@@ -39,8 +45,8 @@ export default function Auth() {
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="mb-4"></div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Adai Soluciones</h1>
-          <p className="text-slate-600">Sistema de Gestión Empresarial</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">AC</h1>
+          <p className="text-slate-600">Gestión de Clientes y Servicios de Aires Acondicionados</p>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-4">
