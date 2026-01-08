@@ -149,6 +149,18 @@ export default function Services() {
   };
 
   const createInvoice = async (service: Service) => {
+    // Verificar si ya existe una factura para este servicio
+    const { data: existingInvoice } = await supabase
+      .from('invoices')
+      .select('invoice_number')
+      .eq('service_id', service.id)
+      .single();
+
+    if (existingInvoice) {
+      alert(`Este servicio ya tiene una factura: ${existingInvoice.invoice_number}`);
+      return;
+    }
+
     // Generate invoice number
     const year = new Date().getFullYear();
     const { count } = await supabase
