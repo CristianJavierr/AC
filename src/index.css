@@ -3,17 +3,40 @@
 @tailwind utilities;
 
 @layer base {
+
   /* Dark mode con colores neutrales verdaderos (sin tinte azul) */
   .dark {
     color-scheme: dark;
   }
-  
+
   :root.dark {
-    --bg-primary: 0 0 0; /* #000000 negro puro */
-    --bg-secondary: 23 23 23; /* #171717 gray-900 */
-    --bg-tertiary: 38 38 38; /* #262626 gray-800 */
-    --border-color: 64 64 64; /* #404040 gray-700 */
-    --text-primary: 255 255 255; /* blanco */
-    --text-secondary: 212 212 212; /* gray-300 */
+    --bg-primary: 0 0 0;
+    /* #000000 negro puro */
+    --bg-secondary: 23 23 23;
+    /* #171717 gray-900 */
+    --bg-tertiary: 38 38 38;
+    /* #262626 gray-800 */
+    --border-color: 64 64 64;
+    /* #404040 gray-700 */
+    --text-primary: 255 255 255;
+    /* blanco */
+    --text-secondary: 212 212 212;
+    /* gray-300 */
+  }
+
+  /* Fix para inputs datetime-local en iOS */
+  input[type="datetime-local"],
+  input[type="date"],
+  input[type="time"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    min-height: 44px !important;
+    padding: 0.5rem 0.75rem !important;
+    line-height: 1.5 !important;
   }
 }

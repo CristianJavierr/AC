@@ -301,60 +301,69 @@ export default function Customers() {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-[#171717] rounded-xl max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">
-              {editingCustomer ? 'Editar Cliente' : 'Nuevo Cliente'}
-            </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                {editingCustomer ? 'Editar Cliente' : 'Nuevo Cliente'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Nombre <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Teléfono</label>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Dirección</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Dirección</label>
                 <textarea
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   rows={2}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Notas</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notas</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   rows={2}
                   placeholder="Notas adicionales sobre el cliente..."
                 />
@@ -364,13 +373,13 @@ export default function Customers() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:bg-[#171717]/50 transition"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition"
+                  className="flex-1 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition dark:bg-[#404040] dark:border-[#404040]"
                 >
                   {editingCustomer ? 'Actualizar' : 'Crear'}
                 </button>

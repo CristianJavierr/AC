@@ -576,13 +576,22 @@ export default function Services() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 dark;">
-          <div className="bg-white dark:bg-[#171717] dark:bg-[#171717] rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-              {editingService ? 'Editar Servicio' : 'Nuevo Servicio'}
-            </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-[#171717] rounded-xl max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto overflow-x-hidden">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                {editingService ? 'Editar Servicio' : 'Nuevo Servicio'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 min-w-0">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative" ref={customerDropdownRef}>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
@@ -655,7 +664,7 @@ export default function Services() {
                   <select
                     value={formData.technician_id}
                     onChange={(e) => setFormData({ ...formData, technician_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   >
                     <option value="">Sin asignar</option>
                     {technicians.map((tech) => (
@@ -675,7 +684,7 @@ export default function Services() {
                   <select
                     value={formData.service_type}
                     onChange={(e) => setFormData({ ...formData, service_type: e.target.value as ServiceType })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                     required
                   >
                     <option value="installation">Instalación</option>
@@ -692,7 +701,7 @@ export default function Services() {
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value as 'low' | 'medium' | 'high' | 'urgent' })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                     required
                   >
                     <option value="low">Baja</option>
@@ -711,7 +720,7 @@ export default function Services() {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   placeholder="Ej: Instalación de aire split 12000 BTU"
                   required
                 />
@@ -722,7 +731,7 @@ export default function Services() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   rows={3}
                   placeholder="Detalles adicionales del servicio..."
                 />
@@ -736,14 +745,14 @@ export default function Services() {
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   placeholder="Dirección completa donde se realizará el servicio"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="min-w-0 overflow-hidden">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Fecha y Hora Programada <span className="text-red-500">*</span>
                   </label>
@@ -751,7 +760,8 @@ export default function Services() {
                     type="datetime-local"
                     value={formData.scheduled_date}
                     onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
                     required
                   />
                 </div>
@@ -762,7 +772,7 @@ export default function Services() {
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value as ServiceStatus })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                     >
                       <option value="pending">Pendiente</option>
                       <option value="assigned">Asignado</option>
@@ -785,7 +795,7 @@ export default function Services() {
                     step="0.01"
                     value={formData.labor_cost}
                     onChange={(e) => setFormData({ ...formData, labor_cost: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                     placeholder="0.00"
                   />
                 </div>
@@ -800,7 +810,7 @@ export default function Services() {
                     step="0.01"
                     value={formData.materials_cost}
                     onChange={(e) => setFormData({ ...formData, materials_cost: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                     placeholder="0.00"
                   />
                 </div>
@@ -817,7 +827,7 @@ export default function Services() {
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   rows={2}
                   placeholder="Notas internas..."
                 />
@@ -833,7 +843,7 @@ export default function Services() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition"
+                  className="flex-1 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition dark:bg-[#404040] dark:border-[#404040]"
                 >
                   {editingService ? 'Actualizar' : 'Crear Servicio'}
                 </button>

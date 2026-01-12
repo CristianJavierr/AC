@@ -5,72 +5,181 @@ import {
   Users,
   DollarSign,
   AlertTriangle,
-  BarChart3,
   Briefcase,
   Wrench,
   CheckCircle,
   Clock,
+  Calendar,
+  Target,
+  ArrowUpRight,
+  ArrowDownRight,
 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+
+type TimePeriod = 'day' | 'week' | 'month' | 'year';
 
 interface DashboardStats {
+  totalRevenue: number;
+  previousRevenue: number;
   totalServices: number;
+  previousServices: number;
+  completedServices: number;
+  previousCompleted: number;
   pendingServices: number;
   inProgressServices: number;
-  completedServices: number;
   totalCustomers: number;
+  previousCustomers: number;
   totalTechnicians: number;
-  totalInvoiced: number;
   urgentServices: number;
 }
 
-interface ServicesByMonth {
-  month: string;
-  completed: number;
-  total: number;
+interface RevenueData {
+  name: string;
+  revenue: number;
+  services: number;
 }
 
-interface ServicesByType {
-  type: ServiceType;
-  count: number;
+interface ServiceTypeData {
+  name: string;
+  value: number;
+  color: string;
+  [key: string]: string | number;
+}
+
+interface TechnicianPerformance {
+  name: string;
+  completed: number;
+  revenue: number;
 }
 
 export default function AnalyticsDashboard() {
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('month');
   const [stats, setStats] = useState<DashboardStats>({
+    totalRevenue: 0,
+    previousRevenue: 0,
     totalServices: 0,
+    previousServices: 0,
+    completedServices: 0,
+    previousCompleted: 0,
     pendingServices: 0,
     inProgressServices: 0,
-    completedServices: 0,
     totalCustomers: 0,
+    previousCustomers: 0,
     totalTechnicians: 0,
-    totalInvoiced: 0,
     urgentServices: 0,
   });
-
-  const [servicesByMonth, setServicesByMonth] = useState<ServicesByMonth[]>([]);
-  const [servicesByType, setServicesByType] = useState<ServicesByType[]>([]);
+  const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
+  const [serviceTypeData, setServiceTypeData] = useState<ServiceTypeData[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [serviceStatusData, setServiceStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [techPerformance, setTechPerformance] = useState<TechnicianPerformance[]>([]);
   const [recentServices, setRecentServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const periodLabels = {
+    day: 'Hoy',
+    week: 'Esta Semana',
+    month: 'Este Mes',
+    year: 'Este Año',
+  };
+
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [timePeriod]);
+
+  const getDateRange = (period: TimePeriod): { start: Date; end: Date; prevStart: Date; prevEnd: Date } => {
+    const now = new Date();
+    let start: Date, end: Date, prevStart: Date, prevEnd: Date;
+
+    switch (period) {
+      case 'day':
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        prevStart = new Date(start.getTime() - 24 * 60 * 60 * 1000);
+        prevEnd = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+        break;
+      case 'week':
+        const dayOfWeek = now.getDay();
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (6 - dayOfWeek), 23, 59, 59);
+        prevStart = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+        prevEnd = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'month':
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+        prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+        break;
+      case 'year':
+        start = new Date(now.getFullYear(), 0, 1);
+        end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+        prevStart = new Date(now.getFullYear() - 1, 0, 1);
+        prevEnd = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59);
+        break;
+    }
+
+    return { start, end, prevStart, prevEnd };
+  };
 
   const loadDashboardData = async () => {
     setLoading(true);
+    const { start, end, prevStart, prevEnd } = getDateRange(timePeriod);
 
     try {
-      // Get services data
-      const { data: services } = await supabase.from('services').select('*');
-      const totalServices = services?.length || 0;
-      const pendingServices = services?.filter((s) => s.status === 'pending').length || 0;
-      const inProgressServices = services?.filter((s) => s.status === 'in_progress' || s.status === 'assigned').length || 0;
-      const completedServices = services?.filter((s) => s.status === 'completed').length || 0;
-      const urgentServices = services?.filter((s) => s.priority === 'urgent' && s.status !== 'completed' && s.status !== 'cancelled').length || 0;
+      // Get all services
+      const { data: allServices } = await supabase.from('services').select('*, technician:user_profiles(*)');
 
-      // Get customers count
-      const { count: customersCount } = await supabase
-        .from('customers')
-        .select('*', { count: 'exact', head: true });
+      // Filter services by period
+      const currentServices = allServices?.filter(s => {
+        const date = new Date(s.scheduled_date);
+        return date >= start && date <= end;
+      }) || [];
+
+      const previousServices = allServices?.filter(s => {
+        const date = new Date(s.scheduled_date);
+        return date >= prevStart && date <= prevEnd;
+      }) || [];
+
+      // Get invoices
+      const { data: allInvoices } = await supabase.from('invoices').select('*');
+
+      const currentInvoices = allInvoices?.filter(inv => {
+        const date = new Date(inv.issue_date);
+        return date >= start && date <= end && inv.status === 'paid';
+      }) || [];
+
+      const previousInvoices = allInvoices?.filter(inv => {
+        const date = new Date(inv.issue_date);
+        return date >= prevStart && date <= prevEnd && inv.status === 'paid';
+      }) || [];
+
+      const totalRevenue = currentInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+      const previousRevenue = previousInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+
+      // Get customers
+      const { data: customers } = await supabase.from('customers').select('created_at');
+      const currentCustomers = customers?.filter(c => {
+        const date = new Date(c.created_at);
+        return date <= end;
+      }).length || 0;
+      const previousCustomers = customers?.filter(c => {
+        const date = new Date(c.created_at);
+        return date <= prevEnd;
+      }).length || 0;
 
       // Get technicians count
       const { count: techniciansCount } = await supabase
@@ -79,22 +188,116 @@ export default function AnalyticsDashboard() {
         .eq('role', 'technician')
         .eq('is_active', true);
 
-      // Get total invoiced (paid invoices)
-      const { data: paidInvoices } = await supabase
-        .from('invoices')
-        .select('total')
-        .eq('status', 'paid');
-      const totalInvoiced = paidInvoices?.reduce((sum, inv) => sum + (inv.total || 0), 0) || 0;
+      // Calculate stats
+      const completedCurrent = currentServices.filter(s => s.status === 'completed').length;
+      const completedPrevious = previousServices.filter(s => s.status === 'completed').length;
+      const pending = currentServices.filter(s => s.status === 'pending').length;
+      const inProgress = currentServices.filter(s => s.status === 'in_progress' || s.status === 'assigned').length;
+      const urgent = currentServices.filter(s => s.priority === 'urgent' && s.status !== 'completed' && s.status !== 'cancelled').length;
 
-      // Get services by month (last 6 months)
-      const monthData = await getServicesByMonth(services || []);
-      setServicesByMonth(monthData);
+      setStats({
+        totalRevenue,
+        previousRevenue,
+        totalServices: currentServices.length,
+        previousServices: previousServices.length,
+        completedServices: completedCurrent,
+        previousCompleted: completedPrevious,
+        pendingServices: pending,
+        inProgressServices: inProgress,
+        totalCustomers: currentCustomers,
+        previousCustomers,
+        totalTechnicians: techniciansCount || 0,
+        urgentServices: urgent,
+      });
 
-      // Get services by type
-      const typeData = getServicesByType(services || []);
-      setServicesByType(typeData);
+      // Generate revenue trend data
+      setRevenueData(generateRevenueData(allInvoices || [], allServices || [], timePeriod));
 
-      // Get recent services
+      // Service type distribution
+      const typeColors: Record<ServiceType, string> = {
+        installation: '#3B82F6',
+        repair: '#F97316',
+        maintenance: '#22C55E',
+        inspection: '#A855F7',
+      };
+
+      const typeLabels: Record<ServiceType, string> = {
+        installation: 'Instalación',
+        repair: 'Reparación',
+        maintenance: 'Mantenimiento',
+        inspection: 'Inspección',
+      };
+
+      const typeCounts: Record<ServiceType, number> = {
+        installation: 0,
+        repair: 0,
+        maintenance: 0,
+        inspection: 0,
+      };
+
+      currentServices.forEach(s => {
+        if (typeCounts[s.service_type as ServiceType] !== undefined) {
+          typeCounts[s.service_type as ServiceType]++;
+        }
+      });
+
+      setServiceTypeData(
+        Object.entries(typeCounts).map(([type, count]) => ({
+          name: typeLabels[type as ServiceType],
+          value: count,
+          color: typeColors[type as ServiceType],
+        }))
+      );
+
+      // Service status distribution
+      const statusColors = {
+        pending: '#EAB308',
+        assigned: '#3B82F6',
+        in_progress: '#F97316',
+        completed: '#22C55E',
+        cancelled: '#EF4444',
+      };
+
+      const statusLabels = {
+        pending: 'Pendiente',
+        assigned: 'Asignado',
+        in_progress: 'En Progreso',
+        completed: 'Completado',
+        cancelled: 'Cancelado',
+      };
+
+      const statusCounts: Record<string, number> = {};
+      currentServices.forEach(s => {
+        statusCounts[s.status] = (statusCounts[s.status] || 0) + 1;
+      });
+
+      setServiceStatusData(
+        Object.entries(statusCounts).map(([status, count]) => ({
+          name: statusLabels[status as ServiceStatus] || status,
+          value: count,
+          color: statusColors[status as ServiceStatus] || '#64748B',
+        }))
+      );
+
+      // Technician performance
+      const techStats: Record<string, { name: string; completed: number; revenue: number }> = {};
+      currentServices.filter(s => s.status === 'completed' && s.technician).forEach(s => {
+        const techId = s.technician_id;
+        const techName = s.technician?.full_name || 'Sin asignar';
+        if (!techStats[techId]) {
+          techStats[techId] = { name: techName, completed: 0, revenue: 0 };
+        }
+        techStats[techId].completed++;
+        techStats[techId].revenue += (s.labor_cost || 0) + (s.materials_cost || 0);
+      });
+
+      setTechPerformance(
+        Object.values(techStats)
+          .sort((a, b) => b.completed - a.completed)
+          .slice(0, 5)
+      );
+
+      // Recent services
       const { data: recent } = await supabase
         .from('services')
         .select('*, customer:customers(*), technician:user_profiles(*)')
@@ -102,16 +305,6 @@ export default function AnalyticsDashboard() {
         .limit(5);
       if (recent) setRecentServices(recent as Service[]);
 
-      setStats({
-        totalServices,
-        pendingServices,
-        inProgressServices,
-        completedServices,
-        totalCustomers: customersCount || 0,
-        totalTechnicians: techniciansCount || 0,
-        totalInvoiced,
-        urgentServices,
-      });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
@@ -119,377 +312,442 @@ export default function AnalyticsDashboard() {
     setLoading(false);
   };
 
-  const getServicesByMonth = (services: any[]): ServicesByMonth[] => {
-    const last6Months = [];
-    const today = new Date();
-// Generar datos para los últimos 6 meses
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      const monthName = date.toLocaleDateString('es-MX', { month: 'short' });
-      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const generateRevenueData = (invoices: any[], services: any[], period: TimePeriod): RevenueData[] => {
+    const data: RevenueData[] = [];
+    const now = new Date();
 
-      const monthServices = services.filter((service) => {
-        const serviceDate = new Date(service.scheduled_date);
-        return serviceDate >= monthStart && serviceDate <= monthEnd;
-      });
+    if (period === 'day') {
+      // Last 24 hours by hour
+      for (let i = 23; i >= 0; i--) {
+        const hour = new Date(now.getTime() - i * 60 * 60 * 1000);
+        const hourStart = new Date(hour.getFullYear(), hour.getMonth(), hour.getDate(), hour.getHours());
+        const hourEnd = new Date(hourStart.getTime() + 60 * 60 * 1000);
 
-      const completedInMonth = monthServices.filter((s) => s.status === 'completed').length;
+        const revenue = invoices
+          .filter(inv => {
+            const date = new Date(inv.issue_date);
+            return date >= hourStart && date < hourEnd && inv.status === 'paid';
+          })
+          .reduce((sum, inv) => sum + (inv.total || 0), 0);
 
-      last6Months.push({
-        month: monthName,
-        completed: completedInMonth,
-        total: monthServices.length,
-      });
-    }
+        const serviceCount = services.filter(s => {
+          const date = new Date(s.scheduled_date);
+          return date >= hourStart && date < hourEnd;
+        }).length;
 
-    return last6Months;
-  };
-
-  const getServicesByType = (services: any[]): ServicesByType[] => {
-    const types: Record<ServiceType, number> = {
-      installation: 0,
-      repair: 0,
-      maintenance: 0,
-      inspection: 0,
-    };
-
-    services.forEach((service) => {
-      if (types[service.service_type as ServiceType] !== undefined) {
-        types[service.service_type as ServiceType]++;
+        data.push({
+          name: `${hour.getHours()}:00`,
+          revenue,
+          services: serviceCount,
+        });
       }
-    });
+    } else if (period === 'week') {
+      // Last 7 days
+      const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      for (let i = 6; i >= 0; i--) {
+        const day = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+        const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
-    return Object.entries(types).map(([type, count]) => ({
-      type: type as ServiceType,
-      count,
-    }));
+        const revenue = invoices
+          .filter(inv => {
+            const date = new Date(inv.issue_date);
+            return date >= dayStart && date < dayEnd && inv.status === 'paid';
+          })
+          .reduce((sum, inv) => sum + (inv.total || 0), 0);
+
+        const serviceCount = services.filter(s => {
+          const date = new Date(s.scheduled_date);
+          return date >= dayStart && date < dayEnd;
+        }).length;
+
+        data.push({
+          name: days[day.getDay()],
+          revenue,
+          services: serviceCount,
+        });
+      }
+    } else if (period === 'month') {
+      // Last 4 weeks
+      for (let i = 3; i >= 0; i--) {
+        const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+        const weekStart = new Date(weekEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        const revenue = invoices
+          .filter(inv => {
+            const date = new Date(inv.issue_date);
+            return date >= weekStart && date <= weekEnd && inv.status === 'paid';
+          })
+          .reduce((sum, inv) => sum + (inv.total || 0), 0);
+
+        const serviceCount = services.filter(s => {
+          const date = new Date(s.scheduled_date);
+          return date >= weekStart && date <= weekEnd;
+        }).length;
+
+        data.push({
+          name: `Sem ${4 - i}`,
+          revenue,
+          services: serviceCount,
+        });
+      }
+    } else {
+      // Last 12 months
+      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      for (let i = 11; i >= 0; i--) {
+        const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+
+        const revenue = invoices
+          .filter(inv => {
+            const date = new Date(inv.issue_date);
+            return date >= month && date <= monthEnd && inv.status === 'paid';
+          })
+          .reduce((sum, inv) => sum + (inv.total || 0), 0);
+
+        const serviceCount = services.filter(s => {
+          const date = new Date(s.scheduled_date);
+          return date >= month && date <= monthEnd;
+        }).length;
+
+        data.push({
+          name: months[month.getMonth()],
+          revenue,
+          services: serviceCount,
+        });
+      }
+    }
+
+    return data;
   };
 
-  const getServiceTypeLabel = (type: ServiceType) => {
-    switch (type) {
-      case 'installation':
-        return 'Instalaciones';
-      case 'repair':
-        return 'Reparaciones';
-      case 'maintenance':
-        return 'Mantenimientos';
-      case 'inspection':
-        return 'Inspecciones';
-      default:
-        return type;
-    }
-  };
-
-  const getServiceTypeColor = (type: ServiceType) => {
-    switch (type) {
-      case 'installation':
-        return 'bg-blue-500';
-      case 'repair':
-        return 'bg-orange-500';
-      case 'maintenance':
-        return 'bg-green-500';
-      case 'inspection':
-        return 'bg-purple-500';
-      default:
-        return 'bg-slate-500';
-    }
+  const calculateChange = (current: number, previous: number): { value: number; isPositive: boolean } => {
+    if (previous === 0) return { value: current > 0 ? 100 : 0, isPositive: current >= 0 };
+    const change = ((current - previous) / previous) * 100;
+    return { value: Math.abs(change), isPositive: change >= 0 };
   };
 
   const getStatusLabel = (status: ServiceStatus) => {
-    switch (status) {
-      case 'pending':
-        return 'Pendiente';
-      case 'assigned':
-        return 'Asignado';
-      case 'in_progress':
-        return 'En Progreso';
-      case 'completed':
-        return 'Completado';
-      case 'cancelled':
-        return 'Cancelado';
-      default:
-        return status;
-    }
+    const labels: Record<string, string> = {
+      pending: 'Pendiente',
+      assigned: 'Asignado',
+      in_progress: 'En Progreso',
+      completed: 'Completado',
+      cancelled: 'Cancelado',
+    };
+    return labels[status] || status;
   };
 
   const getStatusColor = (status: ServiceStatus) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'assigned':
-        return 'bg-blue-100 text-blue-700';
-      case 'in_progress':
-        return 'bg-orange-100 text-orange-700';
-      case 'completed':
-        return 'bg-green-100 text-green-700';
-      case 'cancelled':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-slate-100 text-slate-700';
-    }
+    const colors: Record<string, string> = {
+      pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+      assigned: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      in_progress: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+      completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    };
+    return colors[status] || 'bg-slate-100 text-slate-700';
   };
 
-  const maxServices = Math.max(...servicesByMonth.map((d) => d.total), 1);
-  const totalServicesByType = servicesByType.reduce((sum, s) => sum + s.count, 0);
-
   if (loading) {
-    return <div className="text-center py-8 text-slate-600">Cargando dashboard...</div>;
+    return <div className="text-center py-8 text-slate-600 dark:text-slate-400">Cargando dashboard...</div>;
   }
 
+  const revenueChange = calculateChange(stats.totalRevenue, stats.previousRevenue);
+  const servicesChange = calculateChange(stats.totalServices, stats.previousServices);
+  const completedChange = calculateChange(stats.completedServices, stats.previousCompleted);
+  const customersChange = calculateChange(stats.totalCustomers, stats.previousCustomers);
+
   return (
-    <div className="min-h-screen bg-white">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-          Dashboard
-        </h2>
-        <p className="text-slate-600 mt-2">Resumen de servicios de aires acondicionados</p>
-      </div>
-
-      {/* Tarjetas de métricas principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Total Services */}
-        <div className="group relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-[#BADFDB]/50 via-white to-[#BADFDB]/30 hover:shadow-xl transition-all duration-500">
-          <div className="relative h-full bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/50">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-[#BADFDB]/30 to-[#BADFDB]/10 rounded-2xl backdrop-blur-sm border border-[#BADFDB]/30">
-                <Briefcase size={24} className="text-[#5FB8B1]" />
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium mb-1">Total de Servicios</p>
-              <h3 className="text-2xl font-bold bg-gradient-to-br from-slate-900 to-slate-600 bg-clip-text text-transparent">
-                {stats.totalServices}
-              </h3>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Header with Time Filter */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h2>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
+            Análisis de rendimiento • {periodLabels[timePeriod]}
+          </p>
         </div>
-
-        {/* Pending Services */}
-        <div className="group relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-[#FCF9EA]/70 via-[#FCF9EA]/50 to-[#FCF9EA]/60 hover:shadow-xl transition-all duration-500">
-          <div className="relative h-full bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/50">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-[#FCF9EA]/60 to-[#FCF9EA]/30 rounded-2xl backdrop-blur-sm border border-[#FCF9EA]/60">
-                <Clock size={24} className="text-[#9B8352]" />
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium mb-1">Servicios Pendientes</p>
-              <h3 className="text-2xl font-bold bg-gradient-to-br from-slate-900 to-slate-600 bg-clip-text text-transparent">
-                {stats.pendingServices}
-              </h3>
-              {stats.inProgressServices > 0 && (
-                <p className="text-xs text-slate-500 mt-2">
-                  En progreso: <span className="font-semibold text-slate-700">{stats.inProgressServices}</span>
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Completed Services */}
-        <div className="group relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-green-100/50 via-white to-green-50/30 hover:shadow-xl transition-all duration-500">
-          <div className="relative h-full bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/50">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-green-100/60 to-green-50/30 rounded-2xl backdrop-blur-sm border border-green-200/60">
-                <CheckCircle size={24} className="text-green-600" />
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium mb-1">Completados</p>
-              <h3 className="text-2xl font-bold bg-gradient-to-br from-green-700 to-green-500 bg-clip-text text-transparent">
-                {stats.completedServices}
-              </h3>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Invoiced */}
-        <div className="group relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-[#FFA4A4]/35 via-white to-[#FFA4A4]/25 hover:shadow-xl transition-all duration-500">
-          <div className="relative h-full bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/50">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-[#FFA4A4]/25 to-[#FFA4A4]/10 rounded-2xl backdrop-blur-sm border border-[#FFA4A4]/25">
-                <DollarSign size={24} className="text-[#FF9494]" />
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium mb-1">Total Facturado</p>
-              <h3 className="text-2xl font-bold bg-gradient-to-br from-slate-900 to-slate-600 bg-clip-text text-transparent">
-                ${stats.totalInvoiced.toFixed(2)}
-              </h3>
-            </div>
-          </div>
+        <div className="flex gap-1 bg-slate-100 dark:bg-[#262626] p-1 rounded-lg">
+          {(['day', 'week', 'month', 'year'] as TimePeriod[]).map((period) => (
+            <button
+              key={period}
+              onClick={() => setTimePeriod(period)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${timePeriod === period
+                ? 'bg-white dark:bg-[#404040] text-slate-900 dark:text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+            >
+              {period === 'day' ? 'Día' : period === 'week' ? 'Semana' : period === 'month' ? 'Mes' : 'Año'}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Alertas de servicios urgentes */}
+      {/* Urgent Alert */}
       {stats.urgentServices > 0 && (
-        <div className="relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-[#FFA4A4]/50 via-white to-[#FFA4A4]/30 mb-8">
-          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/50">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-[#FFA4A4]/20 rounded-full blur-3xl -z-10"></div>
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-[#FFA4A4]/30 to-[#FFA4A4]/10 rounded-2xl backdrop-blur-sm border border-[#FFA4A4]/30">
-                <AlertTriangle className="text-[#FF6B6B]" size={24} />
-              </div>
-              <div>
-                <h4 className="font-semibold text-slate-900 mb-1">
-                  Servicios Urgentes
-                </h4>
-                <p className="text-sm text-slate-600">
-                  Hay {stats.urgentServices} servicio(s) marcados como urgentes pendientes de atención.
-                </p>
-              </div>
-            </div>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-center gap-3">
+          <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg">
+            <AlertTriangle className="text-red-600 dark:text-red-400" size={20} />
+          </div>
+          <div>
+            <p className="font-medium text-red-800 dark:text-red-300">
+              {stats.urgentServices} servicio(s) urgente(s) requieren atención
+            </p>
           </div>
         </div>
       )}
 
-      {/* Gráficas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Services by Month Chart */}
-        <div className="relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-[#BADFDB]/40 via-white to-[#FCF9EA]/40">
-          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-white/50">
-            <div className="absolute -top-20 -right-20 w-60 h-60 bg-[#BADFDB]/10 rounded-full blur-3xl -z-10"></div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-gradient-to-br from-[#BADFDB]/20 to-[#BADFDB]/10 rounded-xl">
-                <BarChart3 size={24} className="text-[#5FB8B1]" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">
-                Servicios por Mes
-              </h3>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Revenue */}
+        <div className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <DollarSign className="text-green-600 dark:text-green-400" size={20} />
             </div>
-            <div className="space-y-4">
-              {servicesByMonth.map((data, index) => (
-                <div key={index}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-slate-700 capitalize">
-                      {data.month}
-                    </span>
-                    <span className="text-sm text-slate-600 font-medium">
-                      {data.completed}/{data.total} completados
-                    </span>
-                  </div>
-                  <div className="relative w-full h-3 bg-slate-100/80 rounded-full overflow-hidden backdrop-blur-sm">
-                    <div
-                      className="absolute inset-0 bg-gradient-to-r from-[#BADFDB] to-[#5FB8B1] rounded-full transition-all duration-700 ease-out"
-                      style={{ width: `${(data.total / maxServices) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+            <div className={`flex items-center gap-1 text-xs font-medium ${revenueChange.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {revenueChange.isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+              {revenueChange.value.toFixed(1)}%
             </div>
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Ingresos</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">${stats.totalRevenue.toFixed(2)}</p>
+        </div>
+
+        {/* Services */}
+        <div className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Briefcase className="text-blue-600 dark:text-blue-400" size={20} />
+            </div>
+            <div className={`flex items-center gap-1 text-xs font-medium ${servicesChange.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {servicesChange.isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+              {servicesChange.value.toFixed(1)}%
+            </div>
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Servicios</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{stats.totalServices}</p>
+        </div>
+
+        {/* Completed */}
+        <div className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+              <CheckCircle className="text-emerald-600 dark:text-emerald-400" size={20} />
+            </div>
+            <div className={`flex items-center gap-1 text-xs font-medium ${completedChange.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {completedChange.isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+              {completedChange.value.toFixed(1)}%
+            </div>
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Completados</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{stats.completedServices}</p>
+        </div>
+
+        {/* Customers */}
+        <div className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <Users className="text-purple-600 dark:text-purple-400" size={20} />
+            </div>
+            <div className={`flex items-center gap-1 text-xs font-medium ${customersChange.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {customersChange.isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+              {customersChange.value.toFixed(1)}%
+            </div>
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Clientes</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{stats.totalCustomers}</p>
+        </div>
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Revenue Trend */}
+        <div className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="text-slate-600 dark:text-slate-400" size={20} />
+            <h3 className="font-semibold text-slate-900 dark:text-white">Tendencia de Ingresos</h3>
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#9CA3AF" />
+                <YAxis tick={{ fontSize: 12 }} stroke="#9CA3AF" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1F2937',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#F9FAFB',
+                  }}
+                  formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Ingresos']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#22C55E"
+                  strokeWidth={2}
+                  dot={{ fill: '#22C55E', strokeWidth: 0, r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
         {/* Services by Type */}
-        <div className="relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-slate-200/50 via-white to-slate-100/50">
-          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-white/50">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-gradient-to-br from-slate-100/80 to-slate-50/80 rounded-xl">
-                <Wrench size={24} className="text-slate-600" />
+        <div className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Wrench className="text-slate-600 dark:text-slate-400" size={20} />
+            <h3 className="font-semibold text-slate-900 dark:text-white">Servicios por Tipo</h3>
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={serviceTypeData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={4}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                  labelLine={false}
+                >
+                  {serviceTypeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1F2937',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#F9FAFB',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Second Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Services Bar Chart */}
+        <div className="lg:col-span-2 bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar className="text-slate-600 dark:text-slate-400" size={20} />
+            <h3 className="font-semibold text-slate-900 dark:text-white">Servicios por Período</h3>
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#9CA3AF" />
+                <YAxis tick={{ fontSize: 12 }} stroke="#9CA3AF" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1F2937',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#F9FAFB',
+                  }}
+                />
+                <Bar dataKey="services" fill="#3B82F6" radius={[4, 4, 0, 0]} name="Servicios" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Target className="text-slate-600 dark:text-slate-400" size={20} />
+            <h3 className="font-semibold text-slate-900 dark:text-white">Estado Actual</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Clock className="text-yellow-600 dark:text-yellow-400" size={16} />
+                <span className="text-sm text-slate-700 dark:text-slate-300">Pendientes</span>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">
-                Servicios por Tipo
-              </h3>
+              <span className="font-bold text-yellow-700 dark:text-yellow-400">{stats.pendingServices}</span>
             </div>
-            <div className="space-y-4">
-              {servicesByType.map((item, index) => (
-                <div key={index} className="group flex items-center gap-4 p-3 rounded-2xl hover:bg-white/60 transition-all duration-300">
-                  <div className={`flex-shrink-0 w-4 h-4 rounded-full ${getServiceTypeColor(item.type)}`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-semibold text-slate-900">{getServiceTypeLabel(item.type)}</h4>
-                      <span className="text-sm font-bold text-slate-700">{item.count}</span>
-                    </div>
-                    <div className="relative w-full h-2 bg-slate-100/80 rounded-full overflow-hidden">
-                      <div
-                        className={`absolute inset-0 ${getServiceTypeColor(item.type)} rounded-full transition-all duration-700 ease-out`}
-                        style={{ width: totalServicesByType > 0 ? `${(item.count / totalServicesByType) * 100}%` : '0%' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {totalServicesByType === 0 && (
-                <p className="text-center text-slate-500 py-8">
-                  No hay servicios registrados
-                </p>
-              )}
+            <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Wrench className="text-orange-600 dark:text-orange-400" size={16} />
+                <span className="text-sm text-slate-700 dark:text-slate-300">En Progreso</span>
+              </div>
+              <span className="font-bold text-orange-700 dark:text-orange-400">{stats.inProgressServices}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Users className="text-blue-600 dark:text-blue-400" size={16} />
+                <span className="text-sm text-slate-700 dark:text-slate-300">Técnicos Activos</span>
+              </div>
+              <span className="font-bold text-blue-700 dark:text-blue-400">{stats.totalTechnicians}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Recent Services & Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Services */}
-        <div className="lg:col-span-2 relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-[#BADFDB]/40 via-white to-[#FFA4A4]/40">
-          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-white/50">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-gradient-to-br from-[#BADFDB]/20 to-[#BADFDB]/10 rounded-xl">
-                <Briefcase size={24} className="text-[#5FB8B1]" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">
-                Servicios Recientes
-              </h3>
-            </div>
-            <div className="space-y-3">
-              {recentServices.length > 0 ? (
-                recentServices.map((service) => (
-                  <div key={service.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 transition">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-slate-900 truncate">{service.title}</h4>
-                      <p className="text-sm text-slate-500">{service.customer?.name || 'Sin cliente'}</p>
-                    </div>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(service.status)}`}>
-                      {getStatusLabel(service.status)}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-slate-500 py-8">
-                  No hay servicios recientes
-                </p>
-              )}
-            </div>
+      {/* Bottom Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Top Technicians */}
+        <div className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Wrench className="text-slate-600 dark:text-slate-400" size={20} />
+            <h3 className="font-semibold text-slate-900 dark:text-white">Top Técnicos</h3>
           </div>
+          {techPerformance.length > 0 ? (
+            <div className="space-y-3">
+              {techPerformance.map((tech, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#262626] rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-slate-200 dark:bg-[#404040] rounded-full flex items-center justify-center text-sm font-bold text-slate-600 dark:text-slate-300">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-900 dark:text-white">{tech.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{tech.completed} servicios</p>
+                    </div>
+                  </div>
+                  <span className="font-semibold text-green-600 dark:text-green-400">${tech.revenue.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-slate-500 dark:text-slate-400 py-8">Sin datos de técnicos</p>
+          )}
         </div>
 
-        {/* Quick Stats */}
-        <div className="relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-slate-200/50 via-white to-slate-100/50">
-          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-white/50">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-gradient-to-br from-slate-100/80 to-slate-50/80 rounded-xl">
-                <TrendingUp size={24} className="text-slate-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">
-                Resumen Rápido
-              </h3>
-            </div>
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-slate-50/80">
-                <div className="flex items-center gap-3 mb-2">
-                  <Users size={18} className="text-slate-500" />
-                  <span className="text-sm text-slate-600">Clientes</span>
-                </div>
-                <p className="text-2xl font-bold text-slate-900">{stats.totalCustomers}</p>
-              </div>
-              <div className="p-4 rounded-2xl bg-slate-50/80">
-                <div className="flex items-center gap-3 mb-2">
-                  <Wrench size={18} className="text-slate-500" />
-                  <span className="text-sm text-slate-600">Técnicos Activos</span>
-                </div>
-                <p className="text-2xl font-bold text-slate-900">{stats.totalTechnicians}</p>
-              </div>
-              <div className="p-4 rounded-2xl bg-slate-50/80">
-                <div className="flex items-center gap-3 mb-2">
-                  <DollarSign size={18} className="text-slate-500" />
-                  <span className="text-sm text-slate-600">Facturado (Pagado)</span>
-                </div>
-                <p className="text-2xl font-bold text-slate-900">${stats.totalInvoiced.toFixed(2)}</p>
-              </div>
-            </div>
+        {/* Recent Services */}
+        <div className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Briefcase className="text-slate-600 dark:text-slate-400" size={20} />
+            <h3 className="font-semibold text-slate-900 dark:text-white">Servicios Recientes</h3>
           </div>
+          {recentServices.length > 0 ? (
+            <div className="space-y-3">
+              {recentServices.map((service) => (
+                <div key={service.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#262626] rounded-lg">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-900 dark:text-white truncate">{service.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{service.customer?.name || 'Sin cliente'}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(service.status)}`}>
+                    {getStatusLabel(service.status)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-slate-500 dark:text-slate-400 py-8">No hay servicios recientes</p>
+          )}
         </div>
       </div>
     </div>

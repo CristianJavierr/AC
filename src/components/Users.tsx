@@ -599,9 +599,18 @@ export default function Users() {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-[#171717] dark:bg-[#171717] rounded-xl max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4">
-              {editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
-            </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                {editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => { setShowModal(false); resetForm(); }}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
@@ -721,7 +730,7 @@ export default function Users() {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex-1 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50 dark:bg-[#404040] dark:border-[#404040]"
                 >
                   {creating ? 'Creando...' : editingUser ? 'Actualizar' : 'Crear Usuario'}
                 </button>
