@@ -405,25 +405,25 @@ export default function Services() {
 
       {/* Stats - Desktop (siempre visible) */}
       <div className="hidden md:grid grid-cols-5 gap-4 mb-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-yellow-700 text-sm font-medium">Pendientes</p>
-          <p className="text-2xl font-bold text-yellow-800">{services.filter((s) => s.status === 'pending').length}</p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:border-yellow-400 dark:bg-[#171717]">
+          <p className="text-yellow-700 text-sm font-medium dark:text-yellow-400">Pendientes</p>
+          <p className="text-2xl font-bold text-yellow-800 dark:text-yellow-200">{services.filter((s) => s.status === 'pending').length}</p>
         </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-blue-700 text-sm font-medium">Asignados</p>
-          <p className="text-2xl font-bold text-blue-800">{services.filter((s) => s.status === 'assigned').length}</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:border-blue-400 dark:bg-[#171717]">
+          <p className="text-blue-700 text-sm font-medium dark:text-blue-400">Asignados</p>
+          <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{services.filter((s) => s.status === 'assigned').length}</p>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-          <p className="text-orange-700 text-sm font-medium">En Progreso</p>
-          <p className="text-2xl font-bold text-orange-800">{services.filter((s) => s.status === 'in_progress').length}</p>
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 dark:border-orange-400 dark:bg-[#171717]">
+          <p className="text-orange-700 text-sm font-medium dark:text-orange-400">En Progreso</p>
+          <p className="text-2xl font-bold text-orange-800 dark:text-orange-200">{services.filter((s) => s.status === 'in_progress').length}</p>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-green-700 text-sm font-medium">Completados</p>
-          <p className="text-2xl font-bold text-green-800">{services.filter((s) => s.status === 'completed').length}</p>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:border-green-400 dark:bg-[#171717]">
+          <p className="text-green-700 text-sm font-medium dark:text-green-400">Completados</p>
+          <p className="text-2xl font-bold text-green-800 dark:text-green-200">{services.filter((s) => s.status === 'completed').length}</p>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-700 text-sm font-medium">Cancelados</p>
-          <p className="text-2xl font-bold text-red-800">{services.filter((s) => s.status === 'cancelled').length}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:border-red-400 dark:bg-[#171717]">
+          <p className="text-red-700 text-sm font-medium dark:text-red-400">Cancelados</p>
+          <p className="text-2xl font-bold text-red-800 dark:text-red-200">{services.filter((s) => s.status === 'cancelled').length}</p>
         </div>
       </div>
 

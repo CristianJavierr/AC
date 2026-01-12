@@ -148,33 +148,33 @@ export default function Customers() {
       </div>
 
       <div className="hidden md:grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Users size={18} className="text-blue-600" />
-            <p className="text-blue-700 text-sm font-medium">Total Clientes</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:border-blue-400 dark:bg-[#171717]">
+          <div className="flex items-center gap-2 mb-2 ">
+            <Users size={18} className="text-blue-600 dark:text-blue-400" />
+            <p className="text-blue-700 text-sm font-medium dark:text-blue-400">Total Clientes</p>
           </div>
-          <p className="text-2xl font-bold text-blue-800">{customers.length}</p>
+          <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{customers.length}</p>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:border-green-400 dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
-            <Mail size={18} className="text-green-600" />
-            <p className="text-green-700 text-sm font-medium">Con Email</p>
+            <Mail size={18} className="text-green-600 dark:text-green-400" />
+            <p className="text-green-700 text-sm font-medium dark:text-green-400">Con Email</p>
           </div>
-          <p className="text-2xl font-bold text-green-800">{customersWithEmail}</p>
+          <p className="text-2xl font-bold text-green-800 dark:text-green-200">{customersWithEmail}</p>
         </div>
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 dark:border-purple-400 dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
-            <Phone size={18} className="text-purple-600" />
-            <p className="text-purple-700 text-sm font-medium">Con Teléfono</p>
+            <Phone size={18} className="text-purple-600 dark:text-purple-400" />
+            <p className="text-purple-700 text-sm font-medium dark:text-purple-400">Con Teléfono</p>
           </div>
-          <p className="text-2xl font-bold text-purple-800">{customersWithPhone}</p>
+          <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">{customersWithPhone}</p>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 dark:border-orange-400 dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
-            <MapPin size={18} className="text-orange-600" />
-            <p className="text-orange-700 text-sm font-medium">Con Dirección</p>
+            <MapPin size={18} className="text-orange-600 dark:text-orange-400" />
+            <p className="text-orange-700 text-sm font-medium dark:text-orange-400">Con Dirección</p>
           </div>
-          <p className="text-2xl font-bold text-orange-800">{customersWithAddress}</p>
+          <p className="text-2xl font-bold text-orange-800 dark:text-orange-200">{customersWithAddress}</p>
         </div>
       </div>
 

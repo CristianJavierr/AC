@@ -602,37 +602,37 @@ export default function Invoices() {
       </div>
 
       {/* Stats - Desktop (siempre visible) */}
-      <div className="hidden md:grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+      <div className="hidden md:grid grid-cols-4 gap-4 mb-6 dark:bg-[#171717]">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:border-green-400 dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
-            <CheckCircle size={18} className="text-green-600" />
-            <p className="text-green-700 text-sm font-medium">Pagadas</p>
+            <CheckCircle size={18} className="text-green-600 dark:text-green-400" />
+            <p className="text-green-700 text-sm font-medium dark:text-green-400">Pagadas</p>
           </div>
-          <p className="text-2xl font-bold text-green-800">${totalPaid.toFixed(2)}</p>
-          <p className="text-xs text-green-600">{invoices.filter(inv => inv.status === 'paid').length} facturas</p>
+          <p className="text-2xl font-bold text-green-800 dark:text-green-200">${totalPaid.toFixed(2)}</p>
+          <p className="text-xs text-green-600 dark:text-green-400">{invoices.filter(inv => inv.status === 'paid').length} facturas</p>
         </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:border-blue-400 dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
-            <Send size={18} className="text-blue-600" />
-            <p className="text-blue-700 text-sm font-medium">Por Cobrar</p>
+            <Send size={18} className="text-blue-600 dark:text-blue-400" />
+            <p className="text-blue-700 text-sm font-medium dark:text-blue-400">Por Cobrar</p>
           </div>
-          <p className="text-2xl font-bold text-blue-800">${totalPending.toFixed(2)}</p>
-          <p className="text-xs text-blue-600">{invoices.filter(inv => inv.status === 'sent').length} facturas</p>
+          <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">${totalPending.toFixed(2)}</p>
+          <p className="text-xs text-blue-600 dark:text-blue-400">{invoices.filter(inv => inv.status === 'sent').length} facturas</p>
         </div>
-        <div className="bg-slate-50 dark:bg-[#171717]/50 border border-slate-200 dark:border-[#404040] rounded-lg p-4">
+        <div className="bg-slate-50 dark:bg-[#171717]/50 border border-slate-200 dark:border-[#404040] rounded-lg p-4 dark:border-slate-400 dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
             <FileText size={18} className="text-slate-600 dark:text-slate-400 dark:text-slate-400" />
-            <p className="text-slate-700 dark:text-slate-300 text-sm font-medium">Borradores</p>
+            <p className="text-slate-700 dark:text-slate-300 text-sm font-medium dark:text-slate-400">Borradores</p>
           </div>
-          <p className="text-2xl font-bold text-slate-800">${totalDraft.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">${totalDraft.toFixed(2)}</p>
           <p className="text-xs text-slate-600 dark:text-slate-400 dark:text-slate-400">{invoices.filter(inv => inv.status === 'draft').length} facturas</p>
         </div>
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 dark:border-purple-400 dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign size={18} className="text-purple-600" />
-            <p className="text-purple-700 text-sm font-medium">Total Facturado</p>
+            <DollarSign size={18} className="text-purple-600 dark:text-purple-400" />
+            <p className="text-purple-700 text-sm font-medium dark:text-purple-400">Total Facturado</p>
           </div>
-          <p className="text-2xl font-bold text-purple-800">${(totalPaid + totalPending + totalDraft).toFixed(2)}</p>
+          <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">${(totalPaid + totalPending + totalDraft).toFixed(2)}</p>
           <p className="text-xs text-purple-600">{invoices.length} facturas totales</p>
         </div>
       </div>
