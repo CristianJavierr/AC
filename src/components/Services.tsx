@@ -167,14 +167,14 @@ export default function Services() {
       .from('invoices')
       .select('*', { count: 'exact', head: true })
       .like('invoice_number', `${year}-%`);
-    
+
     const invoiceNumber = `${year}-${String((count || 0) + 1).padStart(5, '0')}`;
-    
+
     const subtotal = service.labor_cost + service.materials_cost;
     const taxRate = 16;
     const taxAmount = subtotal * (taxRate / 100);
     const total = subtotal + taxAmount;
-    
+
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 30);
 
@@ -211,7 +211,7 @@ export default function Services() {
       case 'cancelled':
         return 'bg-red-100 text-red-700';
       default:
-        return 'bg-slate-100 text-slate-700';
+        return 'bg-slate-100 dark:bg-[#262626] text-slate-700';
     }
   };
 
@@ -296,7 +296,7 @@ export default function Services() {
   const currentFilter = filterOptions.find(f => f.value === filterStatus);
 
   if (loading) {
-    return <div className="text-center py-8 text-slate-600">Cargando servicios...</div>;
+    return <div className="text-center py-8 text-slate-600 dark:text-slate-400 dark:text-slate-400">Cargando servicios...</div>;
   }
 
   return (
@@ -304,8 +304,8 @@ export default function Services() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Gestión de Servicios</h2>
-          <p className="text-slate-600 text-sm sm:text-base mt-1 hidden sm:block">Instalaciones, reparaciones y mantenimiento de aires acondicionados</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white dark:text-white">Gestión de Servicios</h2>
+          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base mt-1 hidden sm:block">Instalaciones, reparaciones y mantenimiento de aires acondicionados</p>
         </div>
         <button
           onClick={openNewModal}
@@ -320,26 +320,25 @@ export default function Services() {
       <div className="md:hidden mb-4 relative" ref={filterMenuRef}>
         <button
           onClick={() => setFilterMenuOpen(!filterMenuOpen)}
-          className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-lg px-4 py-3"
+          className="w-full flex items-center justify-between bg-white dark:bg-[#171717]   border border-slate-200 dark:border-[#404040] rounded-lg px-4 py-3"
         >
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full ${filterStatus === 'all' ? 'bg-slate-400' : filterStatus === 'pending' ? 'bg-yellow-500' : filterStatus === 'assigned' ? 'bg-blue-500' : filterStatus === 'in_progress' ? 'bg-orange-500' : filterStatus === 'completed' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-            <span className="font-medium text-slate-900">{currentFilter?.label}</span>
+            <span className="font-medium text-slate-900 dark:text-white dark:text-white">{currentFilter?.label}</span>
           </div>
           <ChevronDown size={20} className={`text-slate-500 transition-transform duration-200 ${filterMenuOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {filterMenuOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden z-30">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-lg shadow-lg overflow-hidden z-30">
             {filterOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => handleFilterSelect(option.value)}
-                className={`w-full flex items-center gap-3 px-4 py-3 transition ${
-                  filterStatus === option.value
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-700 hover:bg-slate-50'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 transition ${filterStatus === option.value
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50'
+                  }`}
               >
                 <span className={`w-2 h-2 rounded-full ${option.value === 'all' ? 'bg-slate-400' : option.value === 'pending' ? 'bg-yellow-500' : option.value === 'assigned' ? 'bg-blue-500' : option.value === 'in_progress' ? 'bg-orange-500' : option.value === 'completed' ? 'bg-green-500' : 'bg-red-500'}`}></span>
                 <span className="font-medium">{option.label}</span>
@@ -355,11 +354,10 @@ export default function Services() {
           <button
             key={option.value}
             onClick={() => setFilterStatus(option.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
-              filterStatus === option.value
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${filterStatus === option.value
+              ? 'bg-slate-900 text-white'
+              : 'bg-slate-100 dark:bg-[#262626] text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+              }`}
           >
             {option.label}
           </button>
@@ -370,36 +368,36 @@ export default function Services() {
       <div className="md:hidden mb-4">
         <button
           onClick={() => setShowStats(!showStats)}
-          className="w-full flex items-center justify-between bg-slate-100 rounded-lg px-4 py-3"
+          className="w-full flex items-center justify-between bg-slate-100 dark:bg-[#262626] rounded-lg px-4 py-3"
         >
           <div className="flex items-center gap-2">
-            <BarChart3 size={18} className="text-slate-600" />
-            <span className="font-medium text-slate-700">Estadísticas</span>
+            <BarChart3 size={18} className="text-slate-600 dark:text-slate-400 dark:text-slate-400" />
+            <span className="font-medium text-slate-700 dark:text-slate-300 dark:text-slate-300">Estadísticas</span>
           </div>
           <ChevronDown size={20} className={`text-slate-500 transition-transform duration-200 ${showStats ? 'rotate-180' : ''}`} />
         </button>
 
         {showStats && (
           <div className="grid grid-cols-2 gap-2 mt-2">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <p className="text-yellow-700 text-xs font-medium">Pendientes</p>
-              <p className="text-xl font-bold text-yellow-800">{services.filter((s) => s.status === 'pending').length}</p>
+            <div className="bg-yellow-50 border dark:bg-[#171717] dark:border-yellow-200 rounded-lg p-3">
+              <p className="text-yellow-700 text-xs font-medium dark:text-yellow-300">Pendientes</p>
+              <p className="text-xl font-bold text-yellow-800 dark:text-yellow-200">{services.filter((s) => s.status === 'pending').length}</p>
             </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-blue-700 text-xs font-medium">Asignados</p>
-              <p className="text-xl font-bold text-blue-800">{services.filter((s) => s.status === 'assigned').length}</p>
+            <div className="bg-blue-50 border dark:bg-[#171717] dark:border-blue-400 rounded-lg p-3">
+              <p className="text-blue-700 text-xs font-medium dark:text-blue-300">Asignados</p>
+              <p className="text-xl font-bold text-blue-800 dark:text-blue-200">{services.filter((s) => s.status === 'assigned').length}</p>
             </div>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-              <p className="text-orange-700 text-xs font-medium">En Progreso</p>
-              <p className="text-xl font-bold text-orange-800">{services.filter((s) => s.status === 'in_progress').length}</p>
+            <div className="bg-orange-50 border dark:bg-[#171717] dark:border-orange-400 rounded-lg p-3">
+              <p className="text-orange-700 text-xs font-medium dark:text-orange-300">En Progreso</p>
+              <p className="text-xl font-bold text-orange-800 dark:text-orange-300">{services.filter((s) => s.status === 'in_progress').length}</p>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-green-700 text-xs font-medium">Completados</p>
-              <p className="text-xl font-bold text-green-800">{services.filter((s) => s.status === 'completed').length}</p>
+            <div className="bg-green-50 border dark:bg-[#171717] dark:border-green-300 rounded-lg p-3">
+              <p className="text-green-700 text-xs font-medium dark:text-green-300">Completados</p>
+              <p className="text-xl font-bold text-green-800 dark:text-green-300">{services.filter((s) => s.status === 'completed').length}</p>
             </div>
-            <div className="col-span-2 bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-red-700 text-xs font-medium">Cancelados</p>
-              <p className="text-xl font-bold text-red-800">{services.filter((s) => s.status === 'cancelled').length}</p>
+            <div className="col-span-2 bg-red-50 border dark:bg-[#171717] dark:border-red-400 rounded-lg p-3">
+              <p className="text-red-700 text-xs font-medium dark:text-red-300">Cancelados</p>
+              <p className="text-xl font-bold text-red-800 dark:text-red-300">{services.filter((s) => s.status === 'cancelled').length}</p>
             </div>
           </div>
         )}
@@ -434,59 +432,59 @@ export default function Services() {
         {filteredServices.map((service) => (
           <div
             key={service.id}
-            className="bg-white border border-slate-200 rounded-lg p-3 sm:p-5 hover:shadow-md transition"
+            className="bg-white dark:bg-[#171717] dark:bg-[#171717] border border-slate-200 dark:border-[#404040] dark:border-[#404040] rounded-lg p-3 sm:p-5 hover:shadow-md transition"
           >
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4">
               <div className="flex-1 min-w-0">
                 {/* Badges - más compactos en móvil */}
                 <div className="flex items-center gap-1.5 sm:gap-3 mb-2 flex-wrap">
-                  <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium ${getPriorityColor(service.priority)}`}>
+                  <span translate="no" className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium ${getPriorityColor(service.priority)}`}>
                     {getPriorityLabel(service.priority)}
                   </span>
                   <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium ${getStatusColor(service.status)}`}>
                     {getStatusLabel(service.status)}
                   </span>
-                  <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-slate-100 text-slate-700 rounded text-[10px] sm:text-xs font-medium">
+                  <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-slate-100 dark:bg-[#262626] text-slate-700 dark:text-slate-300 rounded text-[10px] sm:text-xs font-medium">
                     {getServiceTypeLabel(service.service_type)}
                   </span>
                 </div>
 
-                <h3 className="font-semibold text-base sm:text-lg text-slate-900 mb-1 sm:mb-2 truncate">{service.title}</h3>
+                <h3 className="font-semibold text-base sm:text-lg text-slate-900 dark:text-white mb-1 sm:mb-2 truncate">{service.title}</h3>
 
                 {service.description && (
-                  <p className="text-xs sm:text-sm text-slate-600 mb-2 sm:mb-3 line-clamp-2">{service.description}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 sm:mb-3 line-clamp-2">{service.description}</p>
                 )}
 
                 {/* Info grid - compacto en móvil */}
                 <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600 dark:text-slate-400 dark:text-slate-400">
                     <User size={14} className="text-slate-400 flex-shrink-0" />
                     <span className="truncate">{service.customer?.name || 'Sin cliente'}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600 dark:text-slate-400 dark:text-slate-400">
                     <Wrench size={14} className="text-slate-400 flex-shrink-0" />
                     <span className="truncate">{service.technician?.full_name || 'Sin asignar'}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600 col-span-2 sm:col-span-1">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600 dark:text-slate-400 col-span-2 sm:col-span-1">
                     <MapPin size={14} className="text-slate-400 flex-shrink-0" />
                     <span className="truncate">{service.address}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600 col-span-2 sm:col-span-1">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600 dark:text-slate-400 col-span-2 sm:col-span-1">
                     <Calendar size={14} className="text-slate-400 flex-shrink-0" />
-                    <span className="truncate">{new Date(service.scheduled_date).toLocaleDateString('es-MX', { 
-                      weekday: 'short', 
-                      month: 'short', 
+                    <span className="truncate">{new Date(service.scheduled_date).toLocaleDateString('es-MX', {
+                      weekday: 'short',
+                      month: 'short',
                       day: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit'
                     })}</span>
                   </div>
                   {/* Costos - ocultar detalles en móvil, solo mostrar total */}
-                  <div className="hidden sm:flex items-center gap-2 text-slate-600">
+                  <div className="hidden sm:flex items-center gap-2 text-slate-600 dark:text-slate-400 dark:text-slate-400">
                     <DollarSign size={14} className="text-slate-400" />
                     <span>Mano de obra: ${service.labor_cost.toFixed(2)} | Materiales: ${service.materials_cost.toFixed(2)}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600 font-semibold col-span-2 sm:col-span-1">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600 dark:text-slate-400 font-semibold col-span-2 sm:col-span-1">
                     <DollarSign size={14} className="text-slate-400 sm:hidden flex-shrink-0" />
                     <span>Total: ${(service.labor_cost + service.materials_cost).toFixed(2)}</span>
                   </div>
@@ -550,23 +548,23 @@ export default function Services() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-slate-900 mb-4">
+          <div className="bg-white dark:bg-[#171717] dark:bg-[#171717] rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
               {editingService ? 'Editar Servicio' : 'Nuevo Servicio'}
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Cliente <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.customer_id}
                     onChange={(e) => {
                       const customer = customers.find(c => c.id === e.target.value);
-                      setFormData({ 
-                        ...formData, 
+                      setFormData({
+                        ...formData,
                         customer_id: e.target.value,
                         address: customer?.address || formData.address
                       });
@@ -584,7 +582,7 @@ export default function Services() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Técnico Asignado</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Técnico Asignado</label>
                   <select
                     value={formData.technician_id}
                     onChange={(e) => setFormData({ ...formData, technician_id: e.target.value })}
@@ -602,7 +600,7 @@ export default function Services() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Tipo de Servicio <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -619,7 +617,7 @@ export default function Services() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Prioridad <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -637,7 +635,7 @@ export default function Services() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Título <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -651,7 +649,7 @@ export default function Services() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descripción</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -662,7 +660,7 @@ export default function Services() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Dirección del Servicio <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -677,7 +675,7 @@ export default function Services() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Fecha y Hora Programada <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -691,7 +689,7 @@ export default function Services() {
 
                 {editingService && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Estado</label>
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value as ServiceStatus })}
@@ -709,7 +707,7 @@ export default function Services() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Costo Mano de Obra ($)
                   </label>
                   <input
@@ -724,7 +722,7 @@ export default function Services() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Costo Materiales ($)
                   </label>
                   <input
@@ -739,14 +737,14 @@ export default function Services() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-lg p-4">
-                <p className="text-sm text-slate-600">
+              <div className="bg-slate-50 dark:bg-[#171717]/50 rounded-lg p-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400 dark:text-slate-400">
                   <strong>Total del Servicio:</strong> ${(formData.labor_cost + formData.materials_cost).toFixed(2)}
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Notas</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notas</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -760,7 +758,7 @@ export default function Services() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:bg-[#171717]/50 transition"
                 >
                   Cancelar
                 </button>

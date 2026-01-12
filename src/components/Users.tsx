@@ -81,12 +81,12 @@ export default function Users() {
     if (editingUser) {
       const { error: updateError } = await supabase
         .from('user_profiles')
-        .update({ 
+        .update({
           full_name: formData.full_name,
           phone: formData.phone,
           role: formData.role,
           is_active: formData.is_active,
-          updated_at: new Date().toISOString() 
+          updated_at: new Date().toISOString()
         })
         .eq('id', editingUser.id);
 
@@ -96,7 +96,7 @@ export default function Users() {
       }
     } else {
       setCreating(true);
-      
+
       if (!formData.email || !formData.password || !formData.full_name) {
         setError('Email, contraseña y nombre son requeridos');
         setCreating(false);
@@ -203,7 +203,7 @@ export default function Users() {
     switch (role) {
       case 'admin': return 'bg-purple-100 text-purple-700';
       case 'technician': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-slate-100 text-slate-700';
+      default: return 'bg-slate-100 dark:bg-[#262626] text-slate-700';
     }
   };
 
@@ -253,7 +253,7 @@ export default function Users() {
   const totalActive = users.filter(u => u.is_active).length;
 
   if (loading) {
-    return <div className="text-center py-8 text-slate-600">Cargando usuarios...</div>;
+    return <div className="text-center py-8 text-slate-600 dark:text-slate-400 dark:text-slate-400">Cargando usuarios...</div>;
   }
 
   return (
@@ -261,8 +261,8 @@ export default function Users() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Gestión de Usuarios</h2>
-          <p className="text-slate-600 text-sm sm:text-base mt-1 hidden sm:block">Administradores y Técnicos del sistema</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white dark:text-white">Gestión de Usuarios</h2>
+          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base mt-1 hidden sm:block">Administradores y Técnicos del sistema</p>
         </div>
         <button
           onClick={openCreateModal}
@@ -277,17 +277,17 @@ export default function Users() {
       <div className="md:hidden mb-4 relative" ref={filterMenuRef}>
         <button
           onClick={() => setFilterMenuOpen(!filterMenuOpen)}
-          className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-lg px-4 py-3"
+          className="w-full flex items-center justify-between bg-white border border-slate-200 dark:border-[#404040] dark:bg-[#171717] rounded-lg px-4 py-3"
         >
           <div className="flex items-center gap-2">
             <span className={'w-2 h-2 rounded-full ' + getRoleDotColor(filterRole)}></span>
-            <span className="font-medium text-slate-900">{currentFilter?.label}</span>
+            <span className="font-medium text-slate-900 dark:text-white dark:text-white ">{currentFilter?.label}</span>
           </div>
           <ChevronDown size={20} className={'text-slate-500 transition-transform duration-200 ' + (filterMenuOpen ? 'rotate-180' : '')} />
         </button>
 
         {filterMenuOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden z-30">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 dark:border-[#404040] rounded-lg shadow-lg overflow-hidden z-30 dark:bg-[#171717]">
             {filterOptions.map((option) => (
               <button
                 key={option.value}
@@ -295,7 +295,7 @@ export default function Users() {
                 className={'w-full flex items-center gap-3 px-4 py-3 transition ' + (
                   filterRole === option.value
                     ? 'bg-slate-900 text-white'
-                    : 'text-slate-700 hover:bg-slate-50'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50'
                 )}
               >
                 <span className={'w-2 h-2 rounded-full ' + getRoleDotColor(option.value)}></span>
@@ -315,7 +315,7 @@ export default function Users() {
             className={'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ' + (
               filterRole === option.value
                 ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-[#262626] text-slate-600 dark:text-slate-400 hover:bg-slate-200'
             )}
           >
             {option.label}
@@ -327,32 +327,32 @@ export default function Users() {
       <div className="md:hidden mb-4">
         <button
           onClick={() => setShowStats(!showStats)}
-          className="w-full flex items-center justify-between bg-slate-100 rounded-lg px-4 py-3"
+          className="w-full flex items-center justify-between bg-slate-100 dark:bg-[#262626] rounded-lg px-4 py-3"
         >
           <div className="flex items-center gap-2">
-            <BarChart3 size={18} className="text-slate-600" />
-            <span className="font-medium text-slate-700">Estadísticas</span>
+            <BarChart3 size={18} className="text-slate-600 dark:text-slate-400 dark:text-slate-400" />
+            <span className="font-medium text-slate-700 dark:text-slate-300 dark:text-slate-300">Estadísticas</span>
           </div>
           <ChevronDown size={20} className={'text-slate-500 transition-transform duration-200 ' + (showStats ? 'rotate-180' : '')} />
         </button>
 
         {showStats && (
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-blue-700 text-xs font-medium">Total Usuarios</p>
-              <p className="text-xl font-bold text-blue-800">{users.length}</p>
+          <div className="grid grid-cols-2 gap-2 mt-2 ">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 dark:border-[#404040] dark:bg-[#171717]">
+              <p className="text-blue-700 text-xs font-medium dark:text-blue-400">Total Usuarios</p>
+              <p className="text-xl font-bold text-blue-800 dark:text-blue-200">{users.length}</p>
             </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-              <p className="text-purple-700 text-xs font-medium">Administradores</p>
-              <p className="text-xl font-bold text-purple-800">{totalAdmins}</p>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 dark:border-[#404040] dark:bg-[#171717]">
+              <p className="text-purple-700 text-xs font-medium dark:text-purple-400">Administradores</p>
+              <p className="text-xl font-bold text-purple-800 dark:text-purple-200">{totalAdmins}</p>
             </div>
-            <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3">
-              <p className="text-cyan-700 text-xs font-medium">Técnicos</p>
-              <p className="text-xl font-bold text-cyan-800">{totalTechnicians}</p>
+            <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 dark:border-[#404040] dark:bg-[#171717]">
+              <p className="text-cyan-700 text-xs font-medium dark:text-cyan-400">Técnicos</p>
+              <p className="text-xl font-bold text-cyan-800 dark:text-cyan-200">{totalTechnicians}</p>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-green-700 text-xs font-medium">Activos</p>
-              <p className="text-xl font-bold text-green-800">{totalActive}</p>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 dark:border-[#404040] dark:bg-[#171717]">
+              <p className="text-green-700 text-xs font-medium dark:text-green-400">Activos</p>
+              <p className="text-xl font-bold text-green-800 dark:text-green-200">{totalActive}</p>
             </div>
           </div>
         )}
@@ -393,7 +393,7 @@ export default function Users() {
       {/* Lista de usuarios - Móvil (cards) */}
       <div className="md:hidden space-y-3">
         {filteredUsers.map((user) => (
-          <div key={user.id} className="bg-white border border-slate-200 rounded-lg p-3">
+          <div key={user.id} className="bg-white dark:bg-[#171717] dark:bg-[#171717] border border-slate-200 dark:border-[#404040] dark:border-[#404040] rounded-lg p-3">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
                 {user.avatar_url ? (
@@ -405,7 +405,7 @@ export default function Users() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-sm text-slate-900 truncate">{user.full_name}</h3>
+                    <h3 className="font-semibold text-sm text-slate-900 dark:text-white truncate">{user.full_name}</h3>
                     <p className="text-[10px] text-slate-500">Desde {new Date(user.created_at).toLocaleDateString('es-MX')}</p>
                   </div>
                   <span className={'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0 ' + getRoleBadgeColor(user.role)}>
@@ -413,9 +413,9 @@ export default function Users() {
                     {getRoleLabel(user.role)}
                   </span>
                 </div>
-                
+
                 {user.phone && (
-                  <div className="flex items-center gap-1 text-xs text-slate-600 mt-1">
+                  <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 mt-1">
                     <Phone size={12} className="text-slate-400" />
                     <span>{user.phone}</span>
                   </div>
@@ -437,17 +437,17 @@ export default function Users() {
                   </>
                 )}
               </button>
-              
+
               <div className="flex gap-1">
-                <button 
-                  onClick={() => openEditModal(user)} 
+                <button
+                  onClick={() => openEditModal(user)}
                   className="p-1.5 text-slate-400 hover:text-blue-600 transition"
                   title="Editar"
                 >
                   <Edit2 size={16} />
                 </button>
-                <button 
-                  onClick={() => handleDelete(user)} 
+                <button
+                  onClick={() => handleDelete(user)}
                   className="p-1.5 text-slate-400 hover:text-red-600 transition"
                   title="Eliminar"
                 >
@@ -464,11 +464,11 @@ export default function Users() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Usuario</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Teléfono</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Rol</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Estado</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Acciones</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300 dark:text-slate-300">Usuario</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300 dark:text-slate-300">Teléfono</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300 dark:text-slate-300">Rol</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300 dark:text-slate-300">Estado</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300 dark:text-slate-300">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -484,14 +484,14 @@ export default function Users() {
                       )}
                     </div>
                     <div>
-                      <div className="font-medium text-slate-900">{user.full_name}</div>
+                      <div className="font-medium text-slate-900 dark:text-white dark:text-white">{user.full_name}</div>
                       <div className="text-xs text-slate-500">{new Date(user.created_at).toLocaleDateString('es-MX')}</div>
                     </div>
                   </div>
                 </td>
                 <td className="py-3 px-4">
                   {user.phone ? (
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 dark:text-slate-400">
                       <Phone size={16} className="text-slate-400" />
                       <span>{user.phone}</span>
                     </div>
@@ -548,8 +548,8 @@ export default function Users() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">
+          <div className="bg-white dark:bg-[#171717] dark:bg-[#171717] rounded-xl max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4">
               {editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
             </h3>
 
@@ -564,7 +564,7 @@ export default function Users() {
               {!editingUser && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Email <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -581,7 +581,7 @@ export default function Users() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Contraseña <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -597,7 +597,7 @@ export default function Users() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:text-slate-400"
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -607,7 +607,7 @@ export default function Users() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Nombre Completo <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -621,7 +621,7 @@ export default function Users() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Teléfono</label>
                 <div className="relative">
                   <Phone size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
@@ -635,7 +635,7 @@ export default function Users() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Rol <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -655,16 +655,16 @@ export default function Users() {
                   id="is_active"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-900"
+                  className="w-4 h-4 text-slate-900 dark:text-white border-slate-300 rounded focus:ring-slate-900"
                 />
-                <label htmlFor="is_active" className="text-sm text-slate-700">Usuario activo</label>
+                <label htmlFor="is_active" className="text-sm text-slate-700 dark:text-slate-300 dark:text-slate-300">Usuario activo</label>
               </div>
 
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => { setShowModal(false); resetForm(); }}
-                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:bg-[#171717]/50 transition"
                 >
                   Cancelar
                 </button>

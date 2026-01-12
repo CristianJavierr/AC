@@ -31,8 +31,8 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-slate-600">Cargando...</div>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#000000] flex items-center justify-center">
+        <div className="text-slate-600 dark:text-slate-400">Cargando...</div>
       </div>
     );
   }

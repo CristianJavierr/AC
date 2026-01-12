@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Dark mode con colores neutrales verdaderos (sin tinte azul) */
+  .dark {
+    color-scheme: dark;
+  }
+  
+  :root.dark {
+    --bg-primary: 0 0 0; /* #000000 negro puro */
+    --bg-secondary: 23 23 23; /* #171717 gray-900 */
+    --bg-tertiary: 38 38 38; /* #262626 gray-800 */
+    --border-color: 64 64 64; /* #404040 gray-700 */
+    --text-primary: 255 255 255; /* blanco */
+    --text-secondary: 212 212 212; /* gray-300 */
+  }
+}

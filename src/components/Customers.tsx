@@ -70,7 +70,7 @@ export default function Customers() {
       .eq('customer_id', customer.id);
 
     let confirmMessage = '¿Estás seguro de eliminar al cliente "' + customer.name + '"?';
-    
+
     if (services && services.length > 0) {
       confirmMessage += '\n\n⚠️ ADVERTENCIA: Este cliente tiene ' + services.length + ' servicio(s) asociado(s) que serán eliminados en cascada.';
     }
@@ -94,14 +94,14 @@ export default function Customers() {
   const customersWithAddress = customers.filter(c => c.address).length;
 
   if (loading) {
-    return <div className="text-center py-8 text-slate-600">Cargando clientes...</div>;
+    return <div className="text-center py-8 text-slate-600 dark:text-slate-400">Cargando clientes...</div>;
   }
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Gestión de Clientes</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Gestión de Clientes</h2>
           <p className="text-slate-600 text-sm sm:text-base mt-1 hidden sm:block">Administra tu cartera de clientes</p>
         </div>
         <button
@@ -116,32 +116,32 @@ export default function Customers() {
       <div className="md:hidden mb-4">
         <button
           onClick={() => setShowStats(!showStats)}
-          className="w-full flex items-center justify-between bg-slate-100 rounded-lg px-4 py-3"
+          className="w-full flex items-center justify-between bg-slate-100 dark:bg-[#262626] rounded-lg px-4 py-3"
         >
           <div className="flex items-center gap-2">
-            <BarChart3 size={18} className="text-slate-600" />
-            <span className="font-medium text-slate-700">Estadísticas</span>
+            <BarChart3 size={18} className="text-slate-600 dark:text-slate-400" />
+            <span className="font-medium text-slate-700 dark:text-slate-300">Estadísticas</span>
           </div>
           <ChevronDown size={20} className={'text-slate-500 transition-transform duration-200 ' + (showStats ? 'rotate-180' : '')} />
         </button>
 
         {showStats && (
           <div className="grid grid-cols-2 gap-2 mt-2">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-blue-700 text-xs font-medium">Total Clientes</p>
-              <p className="text-xl font-bold text-blue-800">{customers.length}</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 dark:bg-[#171717] dark:border-blue-400">
+              <p className="text-blue-700 text-xs font-medium dark:text-blue-300">Total Clientes</p>
+              <p className="text-xl font-bold text-blue-800 dark:text-blue-300">{customers.length}</p>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-green-700 text-xs font-medium">Con Email</p>
-              <p className="text-xl font-bold text-green-800">{customersWithEmail}</p>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 dark:bg-[#171717] dark:border-green-400">
+              <p className="text-green-700 text-xs font-medium dark:text-green-300">Con Email</p>
+              <p className="text-xl font-bold text-green-800 dark:text-green-300">{customersWithEmail}</p>
             </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-              <p className="text-purple-700 text-xs font-medium">Con Teléfono</p>
-              <p className="text-xl font-bold text-purple-800">{customersWithPhone}</p>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 dark:bg-[#171717] dark:border-purple-400">
+              <p className="text-purple-700 text-xs font-medium dark:text-purple-300">Con Teléfono</p>
+              <p className="text-xl font-bold text-purple-800 dark:text-purple-300">{customersWithPhone}</p>
             </div>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-              <p className="text-orange-700 text-xs font-medium">Con Dirección</p>
-              <p className="text-xl font-bold text-orange-800">{customersWithAddress}</p>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 dark:bg-[#171717] dark:border-orange-300">
+              <p className="text-orange-700 text-xs font-medium dark:text-orange-300">Con Dirección</p>
+              <p className="text-xl font-bold text-orange-800 dark:text-orange-200">{customersWithAddress}</p>
             </div>
           </div>
         )}
@@ -182,7 +182,7 @@ export default function Customers() {
         {customers.map((customer) => (
           <div
             key={customer.id}
-            className="bg-white border border-slate-200 rounded-lg p-3 sm:p-5 hover:shadow-md transition"
+            className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-lg p-3 sm:p-5 hover:shadow-md transition"
           >
             <div className="flex justify-between items-start mb-2 sm:mb-3">
               <h3 className="font-semibold text-base sm:text-lg text-slate-900 truncate pr-2">{customer.name}</h3>
@@ -206,28 +206,28 @@ export default function Customers() {
 
             <div className="space-y-1.5 sm:space-y-2">
               {customer.email && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                   <Mail size={14} className="text-slate-400 flex-shrink-0" />
                   <span className="truncate">{customer.email}</span>
                 </div>
               )}
 
               {customer.phone && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                   <Phone size={14} className="text-slate-400 flex-shrink-0" />
                   <span>{customer.phone}</span>
                 </div>
               )}
 
               {customer.address && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                   <MapPin size={14} className="text-slate-400 flex-shrink-0" />
                   <span className="line-clamp-1 sm:line-clamp-2">{customer.address}</span>
                 </div>
               )}
 
               {customer.notes && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                   <FileText size={14} className="text-slate-400 flex-shrink-0" />
                   <span className="line-clamp-1 sm:line-clamp-2">{customer.notes}</span>
                 </div>
@@ -250,7 +250,7 @@ export default function Customers() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#171717] rounded-xl max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">
               {editingCustomer ? 'Editar Cliente' : 'Nuevo Cliente'}
             </h3>
