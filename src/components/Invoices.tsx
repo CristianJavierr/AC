@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase, Invoice, InvoiceStatus } from '../lib/supabase';
 import { Trash2, FileText, DollarSign, Calendar, User, CheckCircle, Send, XCircle, AlertCircle, Eye, ChevronDown, BarChart3, Printer, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import Pagination from './Pagination';
 
 export default function Invoices() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -116,9 +117,18 @@ export default function Invoices() {
   const handleFilterSelect = (status: InvoiceStatus | 'all') => {
     setFilterStatus(status);
     setFilterMenuOpen(false);
+    setCurrentPage(1);
   };
 
   const filteredInvoices = filterStatus === 'all' ? invoices : invoices.filter((inv) => inv.status === filterStatus);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+  const paginatedInvoices = filteredInvoices.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const totalPaid = invoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0);
   const totalPending = invoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.total, 0);
@@ -639,7 +649,7 @@ export default function Invoices() {
 
       {/* Lista de facturas - Móvil (cards) */}
       <div className="md:hidden space-y-3">
-        {filteredInvoices.map((invoice) => (
+        {paginatedInvoices.map((invoice) => (
           <div key={invoice.id} className="bg-white dark:bg-[#171717] dark:bg-[#171717] border border-slate-200 dark:border-[#404040] dark:border-[#404040] rounded-lg p-3">
             <div className="flex justify-between items-start mb-2">
               <div>
@@ -719,7 +729,7 @@ export default function Invoices() {
             </tr>
           </thead>
           <tbody>
-            {filteredInvoices.map((invoice) => (
+            {paginatedInvoices.map((invoice) => (
               <tr key={invoice.id} className="border-b border-slate-100 hover:bg-slate-50">
                 <td className="py-3 px-4">
                   <span className="font-mono font-semibold text-slate-900 dark:text-white dark:text-white">{invoice.invoice_number}</span>
@@ -819,6 +829,15 @@ export default function Invoices() {
           </p>
         </div>
       )}
+
+      {/* Paginación */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={filteredInvoices.length}
+        itemsPerPage={itemsPerPage}
+      />
 
       {/* Modal de detalle */}
       {showDetailModal && selectedInvoice && (

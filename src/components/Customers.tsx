@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase, Customer } from '../lib/supabase';
-import { Plus, Edit2, Mail, Phone, MapPin, Trash2, FileText, Users, BarChart3, ChevronDown } from 'lucide-react';
+import { Plus, Edit2, Mail, Phone, MapPin, Trash2, FileText, Users, BarChart3, ChevronDown, Search, X } from 'lucide-react';
+import Pagination from './Pagination';
 
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -8,6 +9,9 @@ export default function Customers() {
   const [showModal, setShowModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [showStats, setShowStats] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -93,6 +97,18 @@ export default function Customers() {
   const customersWithPhone = customers.filter(c => c.phone).length;
   const customersWithAddress = customers.filter(c => c.address).length;
 
+  const filteredCustomers = customers.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.email && c.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (c.phone && c.phone.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (c.address && c.address.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const paginatedCustomers = filteredCustomers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   if (loading) {
     return <div className="text-center py-8 text-slate-600 dark:text-slate-400">Cargando clientes...</div>;
   }
@@ -106,11 +122,36 @@ export default function Customers() {
         </div>
         <button
           onClick={openNewModal}
-          className="flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition w-full sm:w-auto"
+          className="flex items-center justify-left gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition w-full sm:w-auto dark:bg-[#404040] dark:border-[#404040]"
         >
           <Plus size={20} />
           <span>Agregar Cliente</span>
         </button>
+      </div>
+
+      {/* Barra de búsqueda */}
+      <div className="mb-4">
+        <div className="relative">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-10 pr-10 py-2 border border-slate-200 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+            placeholder="Buscar por nombre, email, teléfono..."
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="md:hidden mb-4">
@@ -148,28 +189,28 @@ export default function Customers() {
       </div>
 
       <div className="hidden md:grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:border-blue-400 dark:bg-[#171717]">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:border-[#404040] dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2 ">
             <Users size={18} className="text-blue-600 dark:text-blue-400" />
             <p className="text-blue-700 text-sm font-medium dark:text-blue-400">Total Clientes</p>
           </div>
           <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{customers.length}</p>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:border-green-400 dark:bg-[#171717]">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:border-[#404040] dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
             <Mail size={18} className="text-green-600 dark:text-green-400" />
             <p className="text-green-700 text-sm font-medium dark:text-green-400">Con Email</p>
           </div>
           <p className="text-2xl font-bold text-green-800 dark:text-green-200">{customersWithEmail}</p>
         </div>
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 dark:border-purple-400 dark:bg-[#171717]">
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 dark:border-[#404040] dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
             <Phone size={18} className="text-purple-600 dark:text-purple-400" />
             <p className="text-purple-700 text-sm font-medium dark:text-purple-400">Con Teléfono</p>
           </div>
           <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">{customersWithPhone}</p>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 dark:border-orange-400 dark:bg-[#171717]">
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 dark:border-[#404040] dark:bg-[#171717]">
           <div className="flex items-center gap-2 mb-2">
             <MapPin size={18} className="text-orange-600 dark:text-orange-400" />
             <p className="text-orange-700 text-sm font-medium dark:text-orange-400">Con Dirección</p>
@@ -179,13 +220,13 @@ export default function Customers() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-        {customers.map((customer) => (
+        {paginatedCustomers.map((customer) => (
           <div
             key={customer.id}
             className="bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-lg p-3 sm:p-5 hover:shadow-md transition"
           >
             <div className="flex justify-between items-start mb-2 sm:mb-3">
-              <h3 className="font-semibold text-base sm:text-lg text-slate-900 truncate pr-2">{customer.name}</h3>
+              <h3 className="font-semibold text-base sm:text-lg text-slate-900 truncate pr-2 dark:text-slate-100">{customer.name}</h3>
               <div className="flex gap-0.5 sm:gap-1 flex-shrink-0">
                 <button
                   onClick={() => openEditModal(customer)}
@@ -240,6 +281,15 @@ export default function Customers() {
           </div>
         ))}
       </div>
+
+      {/* Paginación */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={filteredCustomers.length}
+        itemsPerPage={itemsPerPage}
+      />
 
       {customers.length === 0 && (
         <div className="text-center py-12">

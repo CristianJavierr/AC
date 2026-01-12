@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase, Service, Customer, UserProfile, ServiceStatus, ServiceType } from '../lib/supabase';
-import { Plus, Edit2, Trash2, Wrench, Calendar, MapPin, User, AlertCircle, DollarSign, FileText, ChevronDown, BarChart3 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Wrench, Calendar, MapPin, User, AlertCircle, DollarSign, FileText, ChevronDown, BarChart3, Search, X } from 'lucide-react';
+import Pagination from './Pagination';
 
 export default function Services() {
   const [services, setServices] = useState<Service[]>([]);
@@ -13,6 +14,9 @@ export default function Services() {
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const filterMenuRef = useRef<HTMLDivElement>(null);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const customerDropdownRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     customer_id: '',
     technician_id: '',
@@ -37,6 +41,9 @@ export default function Services() {
     const handleClickOutside = (event: MouseEvent) => {
       if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) {
         setFilterMenuOpen(false);
+      }
+      if (customerDropdownRef.current && !customerDropdownRef.current.contains(event.target as Node)) {
+        setShowCustomerDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -119,12 +126,16 @@ export default function Services() {
       labor_cost: service.labor_cost,
       materials_cost: service.materials_cost,
     });
+    // Llenar el campo de búsqueda con el nombre del cliente
+    const customer = customers.find(c => c.id === service.customer_id);
+    setCustomerSearch(customer?.name || '');
     setShowModal(true);
   };
 
   const openNewModal = () => {
     setEditingService(null);
     resetForm();
+    setCustomerSearch('');
     setShowModal(true);
   };
 
@@ -279,9 +290,18 @@ export default function Services() {
 
   const filteredServices = filterStatus === 'all' ? services : services.filter((s) => s.status === filterStatus);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+  const paginatedServices = filteredServices.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const handleFilterSelect = (status: ServiceStatus | 'all') => {
     setFilterStatus(status);
     setFilterMenuOpen(false);
+    setCurrentPage(1);
   };
 
   const filterOptions = [
@@ -309,7 +329,7 @@ export default function Services() {
         </div>
         <button
           onClick={openNewModal}
-          className="flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition w-full sm:w-auto"
+          className="flex items-center justify-left gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition w-full sm:w-auto dark:bg-[#404040] dark:border-[#404040]"
         >
           <Plus size={20} />
           <span>Nuevo Servicio</span>
@@ -405,23 +425,23 @@ export default function Services() {
 
       {/* Stats - Desktop (siempre visible) */}
       <div className="hidden md:grid grid-cols-5 gap-4 mb-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:border-yellow-400 dark:bg-[#171717]">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:border-[#404040] dark:bg-[#171717]">
           <p className="text-yellow-700 text-sm font-medium dark:text-yellow-400">Pendientes</p>
           <p className="text-2xl font-bold text-yellow-800 dark:text-yellow-200">{services.filter((s) => s.status === 'pending').length}</p>
         </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:border-blue-400 dark:bg-[#171717]">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:border-[#404040] dark:bg-[#171717]">
           <p className="text-blue-700 text-sm font-medium dark:text-blue-400">Asignados</p>
           <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{services.filter((s) => s.status === 'assigned').length}</p>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 dark:border-orange-400 dark:bg-[#171717]">
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 dark:border-[#404040] dark:bg-[#171717]">
           <p className="text-orange-700 text-sm font-medium dark:text-orange-400">En Progreso</p>
           <p className="text-2xl font-bold text-orange-800 dark:text-orange-200">{services.filter((s) => s.status === 'in_progress').length}</p>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:border-green-400 dark:bg-[#171717]">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:border-[#404040] dark:bg-[#171717]">
           <p className="text-green-700 text-sm font-medium dark:text-green-400">Completados</p>
           <p className="text-2xl font-bold text-green-800 dark:text-green-200">{services.filter((s) => s.status === 'completed').length}</p>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:border-red-400 dark:bg-[#171717]">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:border-[#404040] dark:bg-[#171717]">
           <p className="text-red-700 text-sm font-medium dark:text-red-400">Cancelados</p>
           <p className="text-2xl font-bold text-red-800 dark:text-red-200">{services.filter((s) => s.status === 'cancelled').length}</p>
         </div>
@@ -429,7 +449,7 @@ export default function Services() {
 
       {/* Lista de servicios */}
       <div className="space-y-3 md:space-y-4">
-        {filteredServices.map((service) => (
+        {paginatedServices.map((service) => (
           <div
             key={service.id}
             className="bg-white dark:bg-[#171717] dark:bg-[#171717] border border-slate-200 dark:border-[#404040] dark:border-[#404040] rounded-lg p-3 sm:p-5 hover:shadow-md transition"
@@ -545,9 +565,18 @@ export default function Services() {
         </div>
       )}
 
+      {/* Paginación */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={filteredServices.length}
+        itemsPerPage={itemsPerPage}
+      />
+
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 dark;">
           <div className="bg-white dark:bg-[#171717] dark:bg-[#171717] rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
               {editingService ? 'Editar Servicio' : 'Nuevo Servicio'}
@@ -555,30 +584,70 @@ export default function Services() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="relative" ref={customerDropdownRef}>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Cliente <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    value={formData.customer_id}
-                    onChange={(e) => {
-                      const customer = customers.find(c => c.id === e.target.value);
-                      setFormData({
-                        ...formData,
-                        customer_id: e.target.value,
-                        address: customer?.address || formData.address
-                      });
-                    }}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
-                    required
-                  >
-                    <option value="">Seleccionar cliente</option>
-                    {customers.map((customer) => (
-                      <option key={customer.id} value={customer.id}>
-                        {customer.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={customerSearch}
+                      onChange={(e) => {
+                        setCustomerSearch(e.target.value);
+                        setShowCustomerDropdown(true);
+                        if (!e.target.value) {
+                          setFormData({ ...formData, customer_id: '', address: '' });
+                        }
+                      }}
+                      onFocus={() => setShowCustomerDropdown(true)}
+                      className="w-full pl-10 pr-10 py-2 border border-slate-300 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                      placeholder="Buscar cliente..."
+                    />
+                    {customerSearch && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomerSearch('');
+                          setFormData({ ...formData, customer_id: '', address: '' });
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
+                  </div>
+                  {showCustomerDropdown && (
+                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {customers
+                        .filter(c => c.name.toLowerCase().includes(customerSearch.toLowerCase()))
+                        .map((customer) => (
+                          <button
+                            key={customer.id}
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                customer_id: customer.id,
+                                address: customer.address || formData.address
+                              });
+                              setCustomerSearch(customer.name);
+                              setShowCustomerDropdown(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#262626] transition ${formData.customer_id === customer.id ? 'bg-slate-100 dark:bg-[#262626]' : ''}`}
+                          >
+                            <p className="font-medium text-slate-900 dark:text-white">{customer.name}</p>
+                            {customer.phone && (
+                              <p className="text-xs text-slate-500 dark:text-slate-400">{customer.phone}</p>
+                            )}
+                          </button>
+                        ))}
+                      {customers.filter(c => c.name.toLowerCase().includes(customerSearch.toLowerCase())).length === 0 && (
+                        <p className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">No se encontraron clientes</p>
+                      )}
+                    </div>
+                  )}
+                  <input type="hidden" value={formData.customer_id} required />
                 </div>
 
                 <div>

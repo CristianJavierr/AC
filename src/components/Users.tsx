@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase, UserProfile, UserRole } from '../lib/supabase';
-import { Edit2, UserCircle, Mail, Phone, Shield, ToggleLeft, ToggleRight, Trash2, Wrench, UserCog, Plus, Eye, EyeOff, AlertCircle, ChevronDown, BarChart3, Users as UsersIcon } from 'lucide-react';
+import { Edit2, UserCircle, Mail, Phone, Shield, ToggleLeft, ToggleRight, Trash2, Wrench, UserCog, Plus, Eye, EyeOff, AlertCircle, ChevronDown, BarChart3, Users as UsersIcon, Search, X } from 'lucide-react';
+import Pagination from './Pagination';
 
 interface UserWithEmail extends UserProfile {
   email?: string;
@@ -18,6 +19,9 @@ export default function Users() {
   const [filterRole, setFilterRole] = useState<UserRole | 'all'>('all');
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const filterMenuRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     email: '',
@@ -243,9 +247,21 @@ export default function Users() {
   const handleFilterSelect = (role: UserRole | 'all') => {
     setFilterRole(role);
     setFilterMenuOpen(false);
+    setCurrentPage(1);
   };
 
-  const filteredUsers = filterRole === 'all' ? users : users.filter((u) => u.role === filterRole);
+  const filteredUsers = users
+    .filter(u => filterRole === 'all' || u.role === filterRole)
+    .filter(u =>
+      u.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (u.phone && u.phone.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const isAdmin = currentUserRole === 'admin';
   const totalAdmins = users.filter(u => u.role === 'admin').length;
@@ -266,11 +282,36 @@ export default function Users() {
         </div>
         <button
           onClick={openCreateModal}
-          className="flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition w-full sm:w-auto"
+          className="flex items-center justify-left gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition w-full sm:w-auto dark:bg-[#404040] dark:border-[#404040]"
         >
           <Plus size={20} />
           <span>Nuevo Usuario</span>
         </button>
+      </div>
+
+      {/* Barra de búsqueda */}
+      <div className="mb-4">
+        <div className="relative">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-10 pr-10 py-2 border border-slate-200 dark:border-[#404040] dark:bg-[#171717] dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+            placeholder="Buscar por nombre o teléfono..."
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filtros - Móvil (dropdown) */}
@@ -392,7 +433,7 @@ export default function Users() {
 
       {/* Lista de usuarios - Móvil (cards) */}
       <div className="md:hidden space-y-3">
-        {filteredUsers.map((user) => (
+        {paginatedUsers.map((user) => (
           <div key={user.id} className="bg-white dark:bg-[#171717] dark:bg-[#171717] border border-slate-200 dark:border-[#404040] dark:border-[#404040] rounded-lg p-3">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
@@ -472,7 +513,7 @@ export default function Users() {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.map((user) => (
+            {paginatedUsers.map((user) => (
               <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
@@ -544,6 +585,15 @@ export default function Users() {
           </p>
         </div>
       )}
+
+      {/* Paginación */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={filteredUsers.length}
+        itemsPerPage={itemsPerPage}
+      />
 
       {/* Modal */}
       {showModal && (
