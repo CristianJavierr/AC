@@ -529,10 +529,12 @@ export default function Invoices() {
           className="w-full flex items-center justify-between bg-white border border-slate-200 dark:border-[#404040] rounded-lg px-4 py-3 dark:bg-[#171717]"
         >
           <div className="flex items-center gap-2">
-            <span className={'w-2 h-2 rounded-full ' + getStatusDotColor(filterStatus)}></span>
-            <span className="font-medium text-slate-900 dark:text-white dark:text-white">{currentFilter?.label}</span>
+            <span className={'w-5 flex-shrink-0 flex items-center justify-center'}>
+              <span className={'w-2 h-2 rounded-full ' + getStatusDotColor(filterStatus)}></span>
+            </span>
+            <span className="font-medium text-slate-900 dark:text-white">{currentFilter?.label}</span>
           </div>
-          <ChevronDown size={20} className={'text-slate-500 transition-transform duration-200 ' + (filterMenuOpen ? 'rotate-180' : '')} />
+          <ChevronDown size={18} className={'text-slate-500 transition-transform duration-200 ' + (filterMenuOpen ? 'rotate-180' : '')} />
         </button>
 
         {filterMenuOpen && (
@@ -579,10 +581,10 @@ export default function Invoices() {
           className="w-full flex items-center justify-between bg-slate-100 dark:bg-[#262626] rounded-lg px-4 py-3"
         >
           <div className="flex items-center gap-2">
-            <BarChart3 size={18} className="text-slate-600 dark:text-slate-400 dark:text-slate-400" />
-            <span className="font-medium text-slate-700 dark:text-slate-300 dark:text-slate-300">Estadísticas</span>
+            <BarChart3 size={18} className="w-5 flex-shrink-0 text-slate-600 dark:text-slate-400" />
+            <span className="font-medium text-slate-700 dark:text-slate-300">Estadísticas</span>
           </div>
-          <ChevronDown size={20} className={'text-slate-500 transition-transform duration-200 ' + (showStats ? 'rotate-180' : '')} />
+          <ChevronDown size={18} className={'text-slate-500 transition-transform duration-200 ' + (showStats ? 'rotate-180' : '')} />
         </button>
 
         {showStats && (

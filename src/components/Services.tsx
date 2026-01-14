@@ -329,10 +329,10 @@ export default function Services() {
         </div>
         <button
           onClick={openNewModal}
-          className="flex items-center justify-left gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition w-full sm:w-auto dark:bg-[#404040] dark:border-[#404040]"
+          className="w-full sm:w-auto flex items-center justify-start gap-2 bg-slate-900 text-white px-4 py-3 sm:py-2 rounded-lg hover:bg-slate-800 transition dark:bg-[#404040]"
         >
-          <Plus size={20} />
-          <span>Nuevo Servicio</span>
+          <Plus size={18} className="w-5 flex-shrink-0" />
+          <span className="font-medium">Nuevo Servicio</span>
         </button>
       </div>
 
@@ -340,13 +340,15 @@ export default function Services() {
       <div className="md:hidden mb-4 relative" ref={filterMenuRef}>
         <button
           onClick={() => setFilterMenuOpen(!filterMenuOpen)}
-          className="w-full flex items-center justify-between bg-white dark:bg-[#171717]   border border-slate-200 dark:border-[#404040] rounded-lg px-4 py-3"
+          className="w-full flex items-center justify-between bg-white dark:bg-[#171717] border border-slate-200 dark:border-[#404040] rounded-lg px-4 py-3"
         >
           <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${filterStatus === 'all' ? 'bg-slate-400' : filterStatus === 'pending' ? 'bg-yellow-500' : filterStatus === 'assigned' ? 'bg-blue-500' : filterStatus === 'in_progress' ? 'bg-orange-500' : filterStatus === 'completed' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-            <span className="font-medium text-slate-900 dark:text-white dark:text-white">{currentFilter?.label}</span>
+            <span className={`w-5 flex-shrink-0 flex items-center justify-center`}>
+              <span className={`w-2 h-2 rounded-full ${filterStatus === 'all' ? 'bg-slate-400' : filterStatus === 'pending' ? 'bg-yellow-500' : filterStatus === 'assigned' ? 'bg-blue-500' : filterStatus === 'in_progress' ? 'bg-orange-500' : filterStatus === 'completed' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+            </span>
+            <span className="font-medium text-slate-900 dark:text-white">{currentFilter?.label}</span>
           </div>
-          <ChevronDown size={20} className={`text-slate-500 transition-transform duration-200 ${filterMenuOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown size={18} className={`text-slate-500 transition-transform duration-200 ${filterMenuOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {filterMenuOpen && (
@@ -391,10 +393,10 @@ export default function Services() {
           className="w-full flex items-center justify-between bg-slate-100 dark:bg-[#262626] rounded-lg px-4 py-3"
         >
           <div className="flex items-center gap-2">
-            <BarChart3 size={18} className="text-slate-600 dark:text-slate-400 dark:text-slate-400" />
-            <span className="font-medium text-slate-700 dark:text-slate-300 dark:text-slate-300">Estadísticas</span>
+            <BarChart3 size={18} className="w-5 flex-shrink-0 text-slate-600 dark:text-slate-400" />
+            <span className="font-medium text-slate-700 dark:text-slate-300">Estadísticas</span>
           </div>
-          <ChevronDown size={20} className={`text-slate-500 transition-transform duration-200 ${showStats ? 'rotate-180' : ''}`} />
+          <ChevronDown size={18} className={`text-slate-500 transition-transform duration-200 ${showStats ? 'rotate-180' : ''}`} />
         </button>
 
         {showStats && (
