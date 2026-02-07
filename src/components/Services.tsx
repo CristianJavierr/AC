@@ -182,9 +182,9 @@ export default function Services() {
     const invoiceNumber = `${year}-${String((count || 0) + 1).padStart(5, '0')}`;
 
     const subtotal = service.labor_cost + service.materials_cost;
-    const taxRate = 16;
-    const taxAmount = subtotal * (taxRate / 100);
-    const total = subtotal + taxAmount;
+    const taxRate = 0;
+    const taxAmount = 0;
+    const total = subtotal;
 
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 30);
