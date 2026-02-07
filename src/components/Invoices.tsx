@@ -355,10 +355,6 @@ export default function Invoices() {
             <td>Subtotal</td>
             <td>$${invoice.subtotal.toFixed(2)}</td>
           </tr>
-          <tr>
-            <td>IVA (${invoice.tax_rate}%)</td>
-            <td>$${invoice.tax_amount.toFixed(2)}</td>
-          </tr>
           <tr class="total-row">
             <td>TOTAL</td>
             <td>$${invoice.total.toFixed(2)}</td>
@@ -454,10 +450,6 @@ export default function Invoices() {
           <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
             <span style="color: #64748b; font-size: 14px; font-weight: 600;">Subtotal</span>
             <span style="font-weight: 600; font-size: 14px;">$${invoice.subtotal.toFixed(2)}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-            <span style="color: #64748b; font-size: 14px;">IVA (${invoice.tax_rate}%)</span>
-            <span style="font-weight: 500; font-size: 14px;">$${invoice.tax_amount.toFixed(2)}</span>
           </div>
           <div style="display: flex; justify-content: space-between; padding: 16px 0; border-top: 2px solid #0f172a;">
             <span style="font-size: 20px; font-weight: bold; color: #0f172a;">TOTAL</span>
@@ -923,10 +915,6 @@ export default function Invoices() {
                 <div className="flex justify-between text-sm border-t border-slate-200 dark:border-[#404040] pt-2">
                   <span className="text-slate-600 dark:text-slate-400 dark:text-slate-400">Subtotal</span>
                   <span className="text-slate-900 dark:text-white dark:text-white">${selectedInvoice.subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600 dark:text-slate-400 dark:text-slate-400">IVA ({selectedInvoice.tax_rate}%)</span>
-                  <span className="text-slate-900 dark:text-white dark:text-white">${selectedInvoice.tax_amount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t border-slate-200 dark:border-[#404040] pt-2">
                   <span className="text-slate-900 dark:text-white dark:text-white">Total</span>
