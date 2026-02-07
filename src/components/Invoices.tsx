@@ -130,9 +130,9 @@ export default function Invoices() {
     currentPage * itemsPerPage
   );
 
-  const totalPaid = invoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0);
-  const totalPending = invoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.total, 0);
-  const totalDraft = invoices.filter(inv => inv.status === 'draft').reduce((sum, inv) => sum + inv.total, 0);
+  const totalPaid = invoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.subtotal, 0);
+  const totalPending = invoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.subtotal, 0);
+  const totalDraft = invoices.filter(inv => inv.status === 'draft').reduce((sum, inv) => sum + inv.subtotal, 0);
 
   const handlePrint = (invoice: Invoice) => {
     const printWindow = window.open('', '_blank');
@@ -357,7 +357,7 @@ export default function Invoices() {
           </tr>
           <tr class="total-row">
             <td>TOTAL</td>
-            <td>$${invoice.total.toFixed(2)}</td>
+            <td>$${invoice.subtotal.toFixed(2)}</td>
           </tr>
         </table>
 
@@ -453,7 +453,7 @@ export default function Invoices() {
           </div>
           <div style="display: flex; justify-content: space-between; padding: 16px 0; border-top: 2px solid #0f172a;">
             <span style="font-size: 20px; font-weight: bold; color: #0f172a;">TOTAL</span>
-            <span style="font-size: 20px; font-weight: bold; color: #0f172a;">$${invoice.total.toFixed(2)}</span>
+            <span style="font-size: 20px; font-weight: bold; color: #0f172a;">$${invoice.subtotal.toFixed(2)}</span>
           </div>
         </div>
 
@@ -663,7 +663,7 @@ export default function Invoices() {
                 <Calendar size={12} />
                 <span>{new Date(invoice.issue_date).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</span>
               </div>
-              <span className="font-semibold text-slate-900 dark:text-white dark:text-white">${invoice.total.toFixed(2)}</span>
+              <span className="font-semibold text-slate-900 dark:text-white dark:text-white">${invoice.subtotal.toFixed(2)}</span>
             </div>
 
             <div className="flex gap-1 mt-2 pt-2 border-t border-slate-100">
@@ -746,7 +746,7 @@ export default function Invoices() {
                   </div>
                 </td>
                 <td className="py-3 px-4 text-right">
-                  <span className="font-semibold text-slate-900 dark:text-white dark:text-white">${invoice.total.toFixed(2)}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white dark:text-white">${invoice.subtotal.toFixed(2)}</span>
                 </td>
                 <td className="py-3 px-4">
                   <span className={'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ' + getStatusColor(invoice.status)}>
@@ -918,7 +918,7 @@ export default function Invoices() {
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t border-slate-200 dark:border-[#404040] pt-2">
                   <span className="text-slate-900 dark:text-white dark:text-white">Total</span>
-                  <span className="text-slate-900 dark:text-white dark:text-white">${selectedInvoice.total.toFixed(2)}</span>
+                  <span className="text-slate-900 dark:text-white dark:text-white">${selectedInvoice.subtotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
